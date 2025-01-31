@@ -23,7 +23,7 @@ class CategoryController extends Controller
                 })
                 ->editColumn('image', function ($row) {
                     if (!$row->image) {
-                        $row->image = 'https://via.placeholder.com/150x150.png?text=No+Image+For' . $row->name;
+                        $row->image = config('constant.placeholder.url').'150x150?text=No+Image+For' . $row->name;
                     }
                     return '<img src="' . $row->image . '" class="img-fluid thumb-md rounded">';
                     // return $row->image;
@@ -38,7 +38,7 @@ class CategoryController extends Controller
                 })
                 ->editColumn('image', function ($row) {
                     if (!$row->image) {
-                        $row->image = 'https://via.placeholder.com/200x200.png?text=No+Image+Available';
+                        $row->image = config('constant.placeholder.url').'200x200?text=No+Image+Available';
                     }
                     return '<img src="' . asset($row->image) . '" class="img-fluid thumb-md rounded">';
                 })
@@ -91,7 +91,7 @@ class CategoryController extends Controller
     public function edit($id = null)
     {
         $data = Category::find($id);
- 
+
         return view('admin.category.edit', get_defined_vars());
     }
 
@@ -109,7 +109,7 @@ class CategoryController extends Controller
             if ($req->image) {
                 $cat->image = uploadFile($req->image, 'uploads/catgeories', 'fence_type-' . auth()->user()->id . '-' . time());
             }
-           
+
             $cat->save();
             $msg = "Record Added Successfully!";
         } else {

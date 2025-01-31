@@ -59,15 +59,15 @@ class User extends Authenticatable
         {
             return $this->hasMany(FtAvailable::class);
         }
-        
+
     public function sendPasswordResetNotification($token)
     {
         $user = User::where('email',request()->email)->first();
 
         if($user){
                 $url = route('password.email').'?token='.$token;
-              
-                
+
+
                  $credetials = [
                     'reason' => 'Password Reset',
                     'name' => $user->name,
@@ -75,13 +75,19 @@ class User extends Authenticatable
                     'link' => $url,
                     'token' => $token
                  ];
-            
+
                 $mail =  sendEmail1($credetials);
          }else{
              return back()->withError('User Not Found against entered email address!');
          }
-       
-        
-        
+
+
+
     }
+
+    public function crmtokenagency()
+    {
+        return $this->hasOne(CrmToken::class, 'user_id')->where('user_type', 'company');
+    }
+
 }

@@ -4,7 +4,7 @@
     } else {
         $loc = find_location($id);
     }
-    
+
 @endphp
 
 <style>
@@ -586,7 +586,7 @@ var selection = {
     var active_color = "{{ setting('estimator_primary_color', $loc->id) ?? '#ED2846' }}";
     var child = 1;
     @if($whereleft != null)
-   
+
     $(document).ready(function() {
 
         setTimeout(function() {
@@ -613,12 +613,12 @@ var selection = {
                 }
             });
 
-        
+
 
 
         }, 500);
 
-        
+
     })
 
     @endif
@@ -855,7 +855,7 @@ var selection = {
 
             if('address' in selection){
                 $('#search_box').val(selection.address);
-                
+
             }
 
             $('.single_gates').html(selection.single_gates);
@@ -864,9 +864,9 @@ var selection = {
             $('#double_gate').val(selection.double_gates).trigger('input');
             setTimeout(function(){
                 if(whereleft && whereleft.where_left=='gates'){
-                
+
                     show_details();
-                
+
                 $("#submit").removeClass("disabled");
                 $('#next').addClass("disabled");
             }
@@ -1115,7 +1115,7 @@ var selection = {
 
 
 <script>
-    
+
     var messages = {
 
         fence_type: "{!! setting('error_message_fencetype', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
@@ -1226,10 +1226,10 @@ var selection = {
         return all;
     }
 
-    
+
 
     @if ($whereleft)
-        selection.estimator_id = '{{ $whereleft->uuid }}';  
+        selection.estimator_id = '{{ $whereleft->uuid }}';
     @endif
     function getTypePrice(all_prices, type, fence_id) {
         all = all_prices.filter((x) => {
@@ -1287,8 +1287,8 @@ var selection = {
             }
             if (img !== '') {
                 var imgpath = "{{ asset('') }}/" + img;
-                var img_error = this.src = "https://via.placeholder.com/200x200.png?text=" + name;
-                //  
+                var img_error = this.src = "{{config('constant.placeholder.url')}}200x200?text=" + name;
+                //
                 img = '<img src="' + imgpath + '" alt="' + name +
                     '" loading="lazy" class="img-responsive form-control p-0" onerror="this.src=\'' +
                     img_error + '\'">';
@@ -1319,10 +1319,10 @@ var selection = {
             $('.fence_feet').removeClass('bg-dark');
         }
     });
-    
+
     var response_data = @json($fence);
-    
-   
+
+
 
     function updateFields(field) {
         // console.log(field);
@@ -1332,7 +1332,7 @@ var selection = {
         //var value = this.value;
         var images = [];
         var key = field;
-        
+
         newkey = key;
         try {
             // console.log(key);
@@ -1386,7 +1386,7 @@ var selection = {
                 setTimeout(function() {
                     show_details();
                 }, 700);
-                 
+
                 //calculate_fence_estimate(false);
                 return;
             }

@@ -229,8 +229,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'CRM' => App\Helper\CRM::class,
-
+        'CRM' => App\Helpers\CRM::class,
+        'gCache' => App\Helpers\gCache::class,
     ],
 
 ];

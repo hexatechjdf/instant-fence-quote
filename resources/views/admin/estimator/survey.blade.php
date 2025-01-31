@@ -4,7 +4,7 @@
     } else {
         $loc = find_location($id);
     }
-    
+
 @endphp
 
 <style>
@@ -425,7 +425,7 @@
                             </div>
                         </div>
                     </div>
-                
+
 
 
 
@@ -622,17 +622,17 @@
     var active_color = "{{ setting('estimator_primary_color', $loc->id) ?? '#ED2846' }}";
     var child = 1;
     @if($whereleft != null)
-   
+
     $(document).ready(function() {
-        
-       
+
+
 
         setTimeout(function() {
             selection = JSON.parse(whereleft.last_selected);
             if('feet' in selection){
                 feet = selection.feet;
             }
-            
+
             if(whereleft.where_left=='personal'){
                 $('#next').trigger('click');
                 return;
@@ -658,12 +658,12 @@
                 }
             });
 
-        
+
 
 
         }, 500);
 
-        
+
     })
 
     @endif
@@ -707,7 +707,7 @@
         $('.' + key).text(slideEvt);
         $(`[name=${key}]`).val(slideEvt);
         calculate_fence_estimate(false, false);
-           
+
        }catch(ee){}
     }
 
@@ -827,14 +827,14 @@
             email: email,
             phone: validatePhone(true),
             id: selection.contact_id ?? '',
-             
+
             estimator_id : selection.estimator_id??'',
             location: "{{ $id ?? '' }}"
         };
 
         //save name,email and phone in local storage
         localStorage.setItem('personal', JSON.stringify(selection.personal));
-        
+
 
         var url = '{{ route('estimator.saveContact', $id) }}';
         var data = selection.personal;
@@ -859,7 +859,7 @@
                 }
             }
         });
-        
+
         return true;
     }
 
@@ -925,7 +925,7 @@
 
             if('address' in selection){
                 $('#search_box').val(selection.address);
-                
+
             }
 
             $('.single_gates').html(selection.single_gates);
@@ -934,9 +934,9 @@
             $('#double_gate').val(selection.double_gates).trigger('input');
             setTimeout(function(){
                 if(whereleft && whereleft.where_left=='gates'){
-                
+
                     show_details();
-                
+
                 $("#submit").removeClass("disabled");
                 $('#next').addClass("disabled");
             }
@@ -1160,7 +1160,7 @@
 
                     setTimeout(() => {
                         const isInsideIframe = window.self !== window.top;
-                        
+
                         let redirectUrl;
                         if (isInsideIframe) {
                             // If the code is running inside an iframe
@@ -1201,7 +1201,7 @@
 
 
 <script>
-    
+
    var messages = {
 
         fence_type: "{!! setting('error_message_fencetype', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
@@ -1215,7 +1215,7 @@
     function displaymap() {
 
     }
-    
+
     var newkey = '';
 
     function calculate_fence_estimate(checkonly = false, hideit = true) {
@@ -1311,10 +1311,10 @@
         return all;
     }
 
-    
+
 
     @if ($whereleft)
-        selection.estimator_id = '{{ $whereleft->uuid }}';  
+        selection.estimator_id = '{{ $whereleft->uuid }}';
     @endif
     function getTypePrice(all_prices, type, fence_id) {
         all = all_prices.filter((x) => {
@@ -1374,8 +1374,8 @@
             }
             if (img !== '') {
                 var imgpath = "{{ asset('') }}/" + img;
-                var img_error = this.src = "https://via.placeholder.com/200x200.png?text=" + name;
-                //  
+                var img_error = this.src = "{{config('constant.placeholder.url')}}200x200?text=" + name;
+                //
                 img = '<img src="' + imgpath + '" alt="' + name +
                     '" loading="lazy" class="img-responsive form-control p-0" onerror="this.src=\'' +
                     img_error + '\'">';
@@ -1406,10 +1406,10 @@
             $('.fence_feet').removeClass('bg-dark');
         }
     });
-    
+
     var response_data = @json($fence);
-    
-   
+
+
 
     function updateFields(field) {
         // console.log(field);
@@ -1419,7 +1419,7 @@
         //var value = this.value;
         var images = [];
         var key = field;
-        
+
         newkey = key;
         try {
             // console.log(key);
@@ -1473,7 +1473,7 @@
                 setTimeout(function() {
                     show_details();
                 }, 700);
-                 
+
                 //calculate_fence_estimate(false);
                 return;
             }

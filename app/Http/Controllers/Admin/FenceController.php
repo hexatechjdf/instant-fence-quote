@@ -35,7 +35,7 @@ class FenceController extends Controller
                 // })
                 ->editColumn('fence_image', function ($row) {
                     if (!$row->fence_image) {
-                        $row->fence_image = 'https://via.placeholder.com/150x150.png?text=No+Image+Available+For' . $row->fence_name;
+                        $row->fence_image = config('constant.placeholder.url').'150x150?text=No+Image+Available+For' . $row->fence_name;
                     }
                     return '<img src="' . asset($row->fence_image) . '" class="img-fluid thumb-md rounded">';
                     // return $row->image;
@@ -84,7 +84,7 @@ class FenceController extends Controller
                     $html .= '
                                  <a class="dropdown-item" href="' . route('fence.edit', $row->id) . '" class="mr-2">Edit</a>
                                  <a class="dropdown-item" href="' . route('fence.delete', $row->id) . '" onclick="event.preventDefault(); deleteMsg(\'' . route('fence.delete', $row->id) . '\')">Delete</a>
-                                 
+
                                  ';
                     return $html;
                 })

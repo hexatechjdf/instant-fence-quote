@@ -1,18 +1,39 @@
 <?php
 
+use App\Helpers\CRM;
+use App\Jobs\AddContactAndTagJob;
 use App\Models\Category;
 use App\Models\CustomField;
 use App\Models\FtAvailable;
-use App\Models\License;
 use App\Models\PriceFit;
 use App\Models\Estimate;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use App\Mail\CredentialChangeMail;
+use App\Models\CrmToken;
 
+// Functions Created by Zahid Started
+function loginUser($user = null)
+{
+    if (auth()->check()) {
+        $user = auth()->user();
+    } else {
+        if (!$user) {
+            $user = User::find($user);
+        }
+    }
+    return $user;
+}
+function getDBCRMToken($locationId){
+    $token = null;
+    $token = CrmToken::where('location_id', $locationId)->first();
+    if($token){
+        return $token;
+    }
+    return $token;
+}
+// Functions Created by Zahid Ended
 function uploadFile($file, $path, $name)
 {
     $name = $name . '.' . $file->getClientOriginalExtension();
@@ -36,7 +57,9 @@ function totalCategory()
 
 function check_ghl($loc)
 {
-    if ($loc && $loc->ghl_api_key) {
+    \Log::info($loc->location);
+    $token = CrmToken::where('location_id', $loc->location)->first();
+    if ($token && $token->access_token) {
         return true;
     } else {
         return false;
@@ -75,7 +98,6 @@ function totalEstimates()
 
 function setting($key, $id = 1)
 {
-
     $setting = Setting::where('company_id', $id)->pluck('value', 'name');
     if ($key == 'all') {
         return $setting;
@@ -140,26 +162,27 @@ function ghl_api_call($url = '', $data = ['method' => 'get', 'body' => '', 'json
     return json_decode($response->getBody());
 }
 
+//Revert the function first create contact then add tag
 function saveContactToGhl($request)
 {
-    // dd($request->all());
     $sab = new stdClass;
     $sab->name = $request->name;
     $sab->email = $request->email;
     $sab->phone = $request->phone;
     $location = find_location($request->location);
 
-
     $request->location_id = $request->location;
     $request->company_id = $location->id;
 
+    $estimatorId =Str::uuid()->toString();
+    $request->estimator_id = $estimatorId;
 
-
-
+    // $estimatorId = $request->estimator_id;
     $request->where_left = $request->current_slide_id ?? "personal";
 
     //save estimate contact
 
+    //Conver to JOb
     if (check_ghl($location)) {
         // $cid='';
         // $met='POST';
@@ -167,51 +190,59 @@ function saveContactToGhl($request)
         //     $met='PUT';
         //     $cid='/'. $request->id;
         // }
-        $res = ghl_api_call('contacts', ['method' => 'POST', 'body' => json_encode($sab), 'json' => true, 'token' => $location->ghl_api_key]);
-    }
+        $locationId = $location->location;
+        // $token = getDBCRMToken($locationId);
+        $sab->locationId = $locationId;
+        $userId = $location->id;
+        $data = $sab;
+        $userId = $location->id;
+        $userId = $location->id;
+        // $request
+        $requestAll = $request->all();
 
-    $resp = new stdClass;
-    $resp->contact_id = $res->contact->id ?? null;
-    $id = null;
+        // $userId, $locationId, $data, $requestAll, $estimatorId, $tags = null
 
-    if ($request->has('estimator_id') && !empty($request->estimator_id) && !is_null($request->estimator_id)) {
-        $id = $request->estimator_id;
+        AddContactAndTagJob::dispatch($userId, $locationId, $data, $requestAll,$estimatorId,['Instant Fence Quote', 'Incomplete'] )->onQueue(env('JOB_QUEUE_TYPE'));
 
-    }
+        $resp = new stdClass;
+        $resp->estimate_id = $estimatorId;
+        return $resp;
 
-    $request->contact_id = $resp->contact_id;
-    $data = $request->all();
-    // dd($data);
-
-    $data['company_id'] = $location->id ?? null;
-    $data['location_id'] = $request->location;
-    $data['contact_id'] = $resp->contact_id ?? null;
-
-    try {
-        unset($data['estimator_id']);
-        unset($data['id']);
-        unset($data['location']);
-    } catch (\Exception $e) {
-
-    }
-
-    $estimated = Estimate::where(['uuid' => $id, 'is_completed' => 0])->first();
-
-    if ($estimated) {
-        //   dd($data['uuid'], "here in update");
-        $est1 = Estimate::where('uuid', $id);
-        $est1->update($data);
-    } else {
-
-        $data['uuid'] = Str::uuid()->toString();
-        // dd($data['uuid'], "here in create");
-        $est = Estimate::create($data);
+        // $res = CRM::crmV2Loc(1, $token->location_id, 'contacts', 'post', $sab, $token);
+        // $res = ghl_api_call('contacts', ['method' => 'POST', 'body' => json_encode($sab), 'json' => true, 'token' => $location->ghl_api_key]);
     }
 
 
-    $resp->estimate_id = $est->uuid;
 
-    return $resp;
+    // $resp->contact_id = $res->contact->id ?? null;
+    // $id = null;
+    // if ($request->has('estimator_id') && !empty($request->estimator_id) && !is_null($request->estimator_id)) {
+    //     $id = $request->estimator_id;
+    // }
+    // $request->contact_id = $resp->contact_id;
+    // $data = $request->all();
+    // unset($data['tags']);
+    // // dd($data);
+    // $data['company_id'] = $location->id ?? null;
+    // $data['location_id'] = $request->location;
+    // $data['contact_id'] = $resp->contact_id ?? null;
+    // try {
+    //     unset($data['estimator_id']);
+    //     unset($data['id']);
+    //     unset($data['location']);
+    // } catch (\Exception $e) {
+    // }
+    // $estimated = Estimate::where(['uuid' => $id, 'is_completed' => 0])->first();
+    // if ($estimated) {
+    //     //   dd($data['uuid'], "here in update");
+    //     $est1 = Estimate::where('uuid', $id);
+    //     $est1->update($data);
+    // } else {
+    //     $data['uuid'] = Str::uuid()->toString();
+    //     // dd($data['uuid'], "here in create");
+    //     $est = Estimate::create($data);
+    // }
+
 }
 
 function get_currency1($loc = null)
@@ -265,11 +296,12 @@ function setCustomFields($request, $loc)
             $request_array[$key] = $value;
         }
 
-
         $loc = find_location($loc);
-
-
-        $ghl_custom_values = ghl_api_call('custom-fields', ['method' => 'get', 'body' => '', 'json' => false, 'token' => $loc->ghl_api_key]);
+        $locationId = $loc->location;
+        $token = getDBCRMToken($locationId);
+        $url = 'locations/'.$locationId.'/customFields';
+        $ghl_custom_values = CRM::crmV2Loc(1, $locationId, $url, 'get', [], $token);
+        // $ghl_custom_values = ghl_api_call('custom-fields', ['method' => 'get', 'body' => '', 'json' => false, 'token' => $loc->ghl_api_key]);
 
         // dd("ghl= ", $ghl_custom_values);
         $custom_values = $ghl_custom_values;
@@ -288,8 +320,6 @@ function setCustomFields($request, $loc)
 
             $i = 0;
 
-
-
             foreach ($request_array as $key => $custom) {
                 // dd($custom);
                 $i++;
@@ -306,7 +336,10 @@ function setCustomFields($request, $loc)
                     $type = strpos($key, 'date') !== false ? 'DATE' : 'TEXT';
                     $type = $key == 'map_image_url' ? 'FILE_UPLOAD' : $type;
                     $send_name = ucwords(str_replace('_', ' ', $key));
-                    $abc = ghl_api_call('custom-fields', ['method' => 'post', 'body' => json_encode(['name' => $send_name, 'dataType' => $type]), 'json' => true]);
+                    $CustData = json_encode(['name' => $send_name, 'dataType' => $type]);
+                    $CustUrl = 'locations/'.$locationId.'/customFields';
+                    $abc = CRM::crmV2Loc(1, $locationId, $CustUrl, 'post',$CustData, $token);
+                    // $abc = ghl_api_call('custom-fields', ['method' => 'post', 'body' => json_encode(['name' => $send_name, 'dataType' => $type]), 'json' => true]);
                     $cord = $abc;
                     if ($cord && property_exists($cord, 'id')) {
                         $id = $cord->id;
@@ -323,6 +356,7 @@ function setCustomFields($request, $loc)
 
 function sendToWebhookUrl($data, $id)
 {
+    // Job convert
     $data = webhookFields($data);
     $webhook_url = setting('webhook_url', $id);
 
@@ -602,12 +636,70 @@ function media($file, $path, $name)
     $file->move(public_path($path), $name);
 }
 
+
+function newSetCustomField($keys, $loc)
+{
+    $user_custom_fields = new \stdClass;
+
+    try {
+        // Convert the keys into a request-like array with empty values
+        $request_array = array_fill_keys($keys, null);
+
+        // Locate the given location
+        $locationId = $loc->location;
+
+        // Retrieve the CRM token
+        $token = getDBCRMToken($locationId);
+
+        // Fetch existing custom fields
+        $url = 'locations/' . $locationId . '/customFields';
+        $ghl_custom_values = CRM::crmV2Loc(1, $locationId, $url, 'get', [], $token);
+
+        $custom_values = $ghl_custom_values;
+
+        if (property_exists($custom_values, 'customFields')) {
+            $custom_values = $custom_values->customFields;
+
+            // Filter keys that already exist
+            $existing_keys = array_map(function ($value) {
+                return strtolower(str_replace(' ', '_', $value->name));
+            }, $custom_values);
+
+            $keys_to_create = array_filter($keys, function ($key) use ($existing_keys) {
+                return !in_array($key, $existing_keys);
+            });
+
+            // Process each key and create custom fields if needed
+            foreach ($keys_to_create as $key) {
+                $type = strpos($key, 'date') !== false ? 'DATE' : 'TEXT';
+                $type = $key == 'map_image_url' ? 'FILE_UPLOAD' : $type;
+                $send_name = ucwords(str_replace('_', ' ', $key));
+
+                $CustData = json_encode(['name' => $send_name, 'dataType' => $type]);
+                dd($CustData);
+                $CustUrl = 'locations/' . $locationId . '/customFields';
+                $response = CRM::crmV2Loc(1, $locationId, $CustUrl, 'post', $CustData, $token);
+
+                if ($response && property_exists($response, 'id')) {
+                    $id = $response->id;
+                    $user_custom_fields->$id = null; // No value assigned initially
+                }
+            }
+        }
+    } catch (\Exception $e) {
+        dd($e->getMessage());
+    }
+
+    return $user_custom_fields;
+}
+
+
 function sendSurvey($request, $type = "send")
 {
-
     $location = find_location($request->location_id);
 
-    $loc_id = auth()->user()->id ?? $location->id;
+    $locationId = $request['location_id'];
+    // $loc_id = auth()->user()->id ?? $location->id;
     $uuid = $request->estimator_id ?? $request->uuid;
     $chk = Estimate::where('uuid', $uuid)->first();
 
@@ -671,23 +763,31 @@ function sendSurvey($request, $type = "send")
 
     // dd($send_fields);
 
-
-
-    $send_location = $request['location_id'];
-
+    // $locationId,$send_fields, $request,$type )
+    // SendDataOfEstimateToCRM::dispatch($locationId, $send_fields, $request,$type)->onQueue(env('JOB_QUEUE_TYPE'));
 
     if (check_ghl($location)) {
 
-        $cus = setCustomFields($send_fields, $send_location);
+
+        $send_fields = [
+            'dummy_field' => 'Dummy entry',
+        ];
+
+        $cus = setCustomFields($send_fields, $locationId);
 
         if (is_object($cus)) {
             $u_obj = new stdClass;
             $u_obj->customField = $cus;
 
+            $ContData = json_encode($u_obj);
+            $ConttUrl = 'contacts/'. $request->contact_id;
+            $token = getDBCRMToken($locationId);
+            $resp = CRM::crmV2Loc(1, $locationId, $ConttUrl, 'put',$ContData, $token);
             // $resp =  ghl_api_call('contacts/' . $request->contact_id, 'PUT', json_encode($u_obj), [], true);
-            $resp = ghl_api_call('contacts/' . $request->contact_id, ['method' => 'put', 'body' => json_encode($u_obj), 'json' => true]);
+            //$resp = ghl_api_call('contacts/' . $request->contact_id, ['method' => 'put', 'body' => json_encode($u_obj), 'json' => true]);
+
             if (!property_exists($resp, 'contact')) {
-                return false;
+                // return false;
             }
 
             $est_check = Estimate::where('uuid', $request->estimator_id ?? $request->uuid)->first();
@@ -698,7 +798,7 @@ function sendSurvey($request, $type = "send")
 
                 $est_check->save();
             }
-            return $resp;
+            // return $resp;
         }
     } else {
 
@@ -709,39 +809,72 @@ function sendSurvey($request, $type = "send")
             }
             $est_check->save();
         }
-        return true;
+        // return true;
     }
 }
 
-
-function add_tags($contact_id, $tag, $customFields = null)
+function add_tags($contact_id, $tag,$token, $customFields = null)
 {
     // dd($contact_id);
     if (!is_object($contact_id)) {
         $contact_id = str_replace(' ', '', $contact_id);
-        $response = ghl_api_call('contacts/' . $contact_id);
+        $response = CRM::crmV2Loc(1, $token->location_id, 'contacts/' . $contact_id, 'get', [], $token);
+        // dd($response);
+        // $response = ghl_api_call('contacts/' . $contact_id);
     } else {
         $response = new \stdClass;
         $response->contact = $contact_id;
     }
-
-
     if ($response && property_exists($response, 'contact')) {
         $contact = $response->contact;
-
-        if (!is_array($contact->tags)) {
-            $contact->tags = [];
+        $alreadyTags = $contact->tags;
+        // $contact
+        if(is_array($tag)){
+            $newTag = $tag;
+        }else{
+            $newTag[] = $tag;
         }
-
-        $contact->tags = [];
-        $contact->tags = array_merge($contact->tags, $tag);
-
+        if($customFields){
+        }
+        $addTags = new stdClass();
+        $addTags->tags =  array_merge($alreadyTags, $newTag);
         // Log::info('Contacts:', ['object' => $contact]);
-
-        $response = ghl_api_call('contacts/' . $contact_id, ['method' => 'put', 'body' => json_encode($contact), 'json' => true]);
+        $response = CRM::crmV2Loc(1, $token->location_id, 'contacts/'.$contact_id.'/tags', 'post', $addTags, $token);
+        // $response = ghl_api_call('contacts/' . $contact_id, ['method' => 'put', 'body' => json_encode($contact), 'json' => true]);
         return $response;
     }
 }
+
+// function add_tags($contact_id, $tag, $customFields = null)
+// {
+//     // dd($contact_id);
+//     if (!is_object($contact_id)) {
+//         $contact_id = str_replace(' ', '', $contact_id);
+//         $response = ghl_api_call('contacts/' . $contact_id);
+//     } else {
+//         $response = new \stdClass;
+//         $response->contact = $contact_id;
+//     }
+
+
+//     if ($response && property_exists($response, 'contact')) {
+//         $contact = $response->contact;
+
+//         if (!is_array($contact->tags)) {
+//             $contact->tags = [];
+//         }
+
+//         $contact->tags = [];
+//         $contact->tags = array_merge($contact->tags, $tag);
+
+//         // Log::info('Contacts:', ['object' => $contact]);
+
+//         $response = ghl_api_call('contacts/' . $contact_id, ['method' => 'put', 'body' => json_encode($contact), 'json' => true]);
+//         return $response;
+//     }
+// }
+
+
 
 
 function default_user_permissions()

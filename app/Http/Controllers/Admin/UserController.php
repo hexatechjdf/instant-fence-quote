@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\CRM;
 use App\Http\Controllers\Controller;
+use App\Jobs\GetLocationAccessToken;
+use App\Jobs\LocationUserAutoAuth;
 use App\Mail\CredentialChangeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,66 +18,7 @@ class UserController extends Controller
     public function list(Request $req)
     {
         if ($req->ajax()) {
-            $query = User::where('id','!=',1)->where('is_active',1)->orderBy('id', 'DESC');
-            return DataTables::eloquent($query)
-                ->addIndexColumn()
-                ->editColumn('status', function($row) {
-                    if ($row->is_active==1) {
-                        $html= '<span class="badge badge-soft-success">Active</span>';
-                    } else {
-                        $html= '<span class="badge badge-soft-danger">Disabled</span>';
-                    }
-                    return $html;
-                })
-                ->addColumn('action', function ($row) {
-                    $html = '';
-                    $html .= '
-                        <div class="dropdown d-inline-block float-right">
-                            <a class="nav-link dropdown-toggle arrow-none" id="dLabel'.$row->id.'" data-bs-toggle="dropdown"
-                                  aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v font-20 text-muted"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel4" style="">
-                    ';
-                    if($row->is_active==1){
-                        $html.= '
-                        <a class="dropdown-item" href="' . route('user.is-active', $row->id) . '" onclick="event.preventDefault(); statusMsg(\'' . route('user.is-active', $row->id) . '\')">Disable</a>
-                        ';
-                    }
-                    else{
-                        $html.= '
-                        <a class="dropdown-item" href="' . route('user.is-active', $row->id) . '" onclick="event.preventDefault(); statusMsg(\'' . route('user.is-active', $row->id) . '\')">Activate</a>
-                        ';
-                    }
-                    $html.= '
-                                 <a class="dropdown-item" href="'.route('user.edit', $row->id).'" class="mr-2">Edit</a>
-                                <a class="dropdown-item" href="'.route('user.delete', $row->id).'" onclick="event.preventDefault(); deleteMsg(\''.route('user.delete', $row->id).'\')">Delete</a>
-                        ';
-                   return $html;
-                })
-                ->rawColumns(['action','status'])
-                ->make(true);
-        }
-
-        return view('admin.user.list', get_defined_vars());
-    }
-
-    public function add()
-    {
-        return view('admin.user.add', get_defined_vars());
-    }
-
-    public function edit($id = null)
-    {
-        $data = User::find($id);
-        return view('admin.user.edit', get_defined_vars());
-    }
-    
-    
-     public function  pending(Request $req)
-    {
-        if ($req->ajax()) {
-            $query = User::where('id', '!=', 1)->where('is_active', 0)->orderBy('id', 'DESC');
+            $query = User::where('id', '!=', 1)->where('is_active', 1)->orderBy('id', 'DESC');
             return DataTables::eloquent($query)
                 ->addIndexColumn()
                 ->editColumn('status', function ($row) {
@@ -85,11 +29,19 @@ class UserController extends Controller
                     }
                     return $html;
                 })
+                ->editColumn('separate_location', function ($row) {
+                    if ($row->separate_location == 1) {
+                        $html = '<span class="badge badge-soft-success">Yes</span>';
+                    } else {
+                        $html = '<span class="badge badge-soft-danger">No</span>';
+                    }
+                    return $html;
+                })
                 ->addColumn('action', function ($row) {
                     $html = '';
                     $html .= '
-                       <div class="dropdown d-inline-block float-right">
-                            <a class="nav-link dropdown-toggle arrow-none" id="dLabel'.$row->id.'" data-bs-toggle="dropdown"
+                        <div class="dropdown d-inline-block float-right">
+                            <a class="nav-link dropdown-toggle arrow-none" id="dLabel' . $row->id . '" data-bs-toggle="dropdown"
                                   aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                                 <i class="fas fa-ellipsis-v font-20 text-muted"></i>
                             </a>
@@ -110,7 +62,73 @@ class UserController extends Controller
                         ';
                     return $html;
                 })
-                ->rawColumns(['action', 'status'])
+                ->rawColumns(['action', 'status', 'separate_location'])
+                ->make(true);
+        }
+
+        return view('admin.user.list', get_defined_vars());
+    }
+
+    public function add()
+    {
+        return view('admin.user.add', get_defined_vars());
+    }
+
+    public function edit($id = null)
+    {
+        $data = User::find($id);
+        return view('admin.user.edit', get_defined_vars());
+    }
+
+
+    public function  pending(Request $req)
+    {
+        if ($req->ajax()) {
+            $query = User::where('id', '!=', 1)->where('is_active', 0)->orderBy('id', 'DESC');
+            return DataTables::eloquent($query)
+                ->addIndexColumn()
+                ->editColumn('status', function ($row) {
+                    if ($row->is_active == 1) {
+                        $html = '<span class="badge badge-soft-success">Active</span>';
+                    } else {
+                        $html = '<span class="badge badge-soft-danger">Disabled</span>';
+                    }
+                    return $html;
+                })
+                ->editColumn('separate_location', function ($row) {
+                    if ($row->separate_location == 1) {
+                        $html = '<span class="badge badge-soft-success">Yes</span>';
+                    } else {
+                        $html = '<span class="badge badge-soft-danger">No</span>';
+                    }
+                    return $html;
+                })
+                ->addColumn('action', function ($row) {
+                    $html = '';
+                    $html .= '
+                       <div class="dropdown d-inline-block float-right">
+                            <a class="nav-link dropdown-toggle arrow-none" id="dLabel' . $row->id . '" data-bs-toggle="dropdown"
+                                  aria-haspopup="true" aria-expanded="false" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v font-20 text-muted"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel4" style="">
+                    ';
+                    if ($row->is_active == 1) {
+                        $html .= '
+                        <a class="dropdown-item" href="' . route('user.is-active', $row->id) . '" onclick="event.preventDefault(); statusMsg(\'' . route('user.is-active', $row->id) . '\')">Disable</a>
+                        ';
+                    } else {
+                        $html .= '
+                        <a class="dropdown-item" href="' . route('user.is-active', $row->id) . '" onclick="event.preventDefault(); statusMsg(\'' . route('user.is-active', $row->id) . '\')">Activate</a>
+                        ';
+                    }
+                    $html .= '
+                                 <a class="dropdown-item" href="' . route('user.edit', $row->id) . '" class="mr-2">Edit</a>
+                                <a class="dropdown-item" href="' . route('user.delete', $row->id) . '" onclick="event.preventDefault(); deleteMsg(\'' . route('user.delete', $row->id) . '\')">Delete</a>
+                        ';
+                    return $html;
+                })
+                ->rawColumns(['action', 'status', 'separate_location'])
                 ->make(true);
         }
 
@@ -136,18 +154,17 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'All users deleted successfully');
     }
 
-    
-    
+
+
 
     public function save(Request $req, $id = null)
     {
-        if (is_null($id))
-        {
+        if (is_null($id)) {
             $req->validate([
                 'name'          => 'required',
                 'email'          => 'required|email|unique:users',
                 'password'   => 'required',
-            //    'api_key'      => 'required',
+                //    'api_key'      => 'required',
                 'location'      => 'required|unique:users'
             ]);
         }
@@ -155,53 +172,55 @@ class UserController extends Controller
         if (is_null($id)) {
             $user = User::create([
                 'name' => $req->name,
-                'ghl_api_key'  => $req->api_key ??'',
+                'ghl_api_key'  => $req->api_key ?? '',
                 'email' => $req->email,
                 'password' => Hash::make($req->password),
-                'location'  => $req->location ?? rand(11111111111,99999999999990),
+                'location'  => $req->location ?? rand(11111111111, 99999999999990),
                 'role'         => 0,
-                'is_active' => 1
+                'is_active' => 1,
+                'separate_location' => $req->has('separate_location') ? 1 : 0
             ]);
-            
+
             $reason = "Account Created At ";
 
-          
-            
+
+
 
             $msg = "Record Added Successfully!";
         } else {
             $req->validate([
                 'name'          => 'required',
                 'email'          => 'required|email',
-               // 'api_key'      => 'required',
+                // 'api_key'      => 'required',
                 'location'      => 'required'
             ]);
-            
+
             $user = User::findOrFail($id);
 
             $user->name = $req->name;
             $user->email = $req->email;
             $user->ghl_api_key = $req->api_key ?? '';
-           if($req->password){
-             $user->password = Hash::make($req->password);
-           }
+            $user->separate_location = $req->has('separate_location') ? 1 : 0;
+            if ($req->password) {
+                $user->password = Hash::make($req->password);
+            }
             $user->location  = $req->location;
             $user->save();
 
             $msg = "Record Edited Successfully!";
-            $reason = "Account Updated - " ;
+            $reason = "Account Updated - ";
         }
-        
-         $credetials = [
-                    'reason' => $reason,
-                    'name' => $req->name,
-                    'email' => $req->email,
-                    'password' => $req->password ?? "Use Old Password",
-                 ];
-            
-                $mail =  sendEmail($credetials);
-         
-           
+
+        $credetials = [
+            'reason' => $reason,
+            'name' => $req->name,
+            'email' => $req->email,
+            'password' => $req->password ?? "Use Old Password",
+        ];
+
+        $mail =  sendEmail($credetials);
+
+
         return redirect()->back()->with('success', $msg);
     }
 
@@ -214,17 +233,84 @@ class UserController extends Controller
     public function isActive($id)
     {
         $category = User::find($id);
-        if($category->is_active==1)
-        {
+        if ($category->is_active == 1) {
             $category->is_active = 0;
-        }
-        elseif($category->is_active==0)
-        {
+        } elseif ($category->is_active == 0) {
             $category->is_active = 1;
         }
 
         $category->save();
-        return back()->with('success','Status Changed Successfully.');
+        return back()->with('success', 'Status Changed Successfully.');
     }
 
+    public function manageSubaccount()
+    {
+        $userId = 1;
+        // $users = User::where('role', 0)->where('is_active', 1)->where('separate_location', 0)->pluck('location', 'id')->toArray();
+        $users = User::where('role', 0)->where('is_active', 1)->whereNotNull('location')->get();
+        $crmlocationID = [];
+
+        $allLocations = [];
+        $limit = 100;
+        $skip = 0;
+
+        do {
+            $urlmain = "locations/search?deleted=false&limit={$limit}&skip={$skip}";
+            $locations = CRM::agencyV2($userId, $urlmain);
+            $locations = $locations->locations ?? [];
+
+            $allLocations = array_merge($allLocations, $locations);
+            $hasMore = count($locations) === $limit;
+            $skip += $limit;
+        } while ($hasMore);
+
+        foreach ($allLocations as $loc) {
+            $crmlocationID[] = $loc->id;
+        }
+        return view('admin.user.manage-subaccounts', get_defined_vars());
+    }
+
+    public function getLocations(Request $request)
+    {
+        $userId = 1; // Use the appropriate user ID or fetch from session/auth.
+        $limit = 100;
+        $skip = $request->input('skip', 0);  // Get skip value from the request
+
+        // Fetch locations from CRM API
+        $urlmain = "locations/search?deleted=false&limit={$limit}&skip={$skip}";
+        $locations = CRM::agencyV2($userId, $urlmain);
+        $locations = $locations->locations ?? [];
+
+        // Return the locations as JSON
+        return response()->json([
+            'locations' => $locations,
+            'has_more' => count($locations) === $limit, // Indicate if there are more locations
+        ]);
+    }
+
+    public function connectLocations(Request $request)
+    {
+        $data = $request->all();
+        foreach ($data as $key => $d) {
+            if ($d['is_manual'] == false) {
+                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_QUEUE_TYPE'));
+            }
+        }
+        return response()->json(['status' => 'success',  'message' => 'Your agancy locations are connecting in the background']);
+    }
+    
+    public function saveUserDetail(Request $request)
+    {
+        $data = $request->all();
+        foreach ($data as $key => $d) {
+            if ($d['is_manual'] == true) {
+                $user = User::find($d['userId']);
+                if ($user) {
+                    $user->location = $d['locationId'];
+                    $user->save();
+                }
+            }
+        }
+        return response()->json(['status' => 'success',  'message' => 'Data saved successfully']);
+    }
 }

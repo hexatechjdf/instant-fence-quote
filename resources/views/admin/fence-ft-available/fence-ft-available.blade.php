@@ -40,15 +40,15 @@
                                 @foreach ($data as $i=>$dat)
                                 <tr>
                                     <td>
-                                        {{ $dat->fence->user->name }}
+                                        {{ $dat->fence?->user?->name }}
                                     </td>
                                     <td>
-                                        {{ $dat->fence->fence_name }}
+                                        {{ $dat?->fence?->fence_name }}
                                     </td>
                                     <td>
                                         <div class="d-flex">
-                                            @foreach(App\Models\FenceFtAvailable::with('ft_available')->where('fence_id',$dat->fence->id)->get() as $fts)
-                                                <span>{{ $fts->ft_available->ft_available_name }} ,  </span>
+                                            @foreach(App\Models\FenceFtAvailable::with('ft_available')->where('fence_id',$dat->fence?->id)->get() as $fts)
+                                                <span>{{ $fts->ft_available?->ft_available_name }} ,  </span>
                                             @endforeach
                                         </div>
                                    </td>

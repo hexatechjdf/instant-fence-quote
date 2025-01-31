@@ -4,6 +4,9 @@
 
 @section('content')
 
+    @php
+        $authUser = auth()->user();
+    @endphp
     <!-- Page-Title -->
     <div class="row">
         <div class="col-sm-12">
@@ -22,7 +25,7 @@
     </div>
     <!-- end page title end breadcrumb -->
     <div class="row">
-        @if (auth()->user()->role == 1)
+        @if ($authUser->role == 1)
             <div class="col-md-8 mx-auto">
                 <div class="card">
                     <div class="card-body">
@@ -42,7 +45,7 @@
                                                     </div>
                                                     <input type="text" name="software_name" class="form-control"
                                                         autocomplete="off" autofocus="autofocus"
-                                                        value="{{ setting('software_name', auth()->user()->id) ?? 'Instant Fence Price' }}">
+                                                        value="{{ setting('software_name', $authUser->id) ?? 'Instant Fence Price' }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -55,7 +58,7 @@
                                                     </div>
                                                     <input type="text" name="software_email" class="form-control"
                                                         autocomplete="off" autofocus="autofocus"
-                                                        value="{{ setting('software_email', auth()->user()->id) ?? 'roguebusinessmarketing@gmail.com' }}">
+                                                        value="{{ setting('software_email', $authUser->id) ?? 'roguebusinessmarketing@gmail.com' }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -71,11 +74,39 @@
                                                     </div>
                                                     <input type="text" name="lead_management_system" class="form-control" placeholder="https://example.com"
                                                         autocomplete="off" autofocus="autofocus"
-                                                        value="{{ setting('lead_management_system', auth()->user()->id) ?? '' }}">
+                                                        value="{{ setting('lead_management_system', $authUser->id) ?? '' }}">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-md-12 text-left">
+                                        <div class="form-group">
+                                            <label for="crm_client_id">CRM Client Key</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input type="text" name="crm_client_id" class="form-control" placeholder="Enter CRM Client Id"
+                                                    autocomplete="off" autofocus="autofocus"
+                                                    value="{{ setting('crm_client_id', $authUser->id) ?? '' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 text-left">
+                                        <div class="form-group">
+                                            <label for="crm_client_secret">CRM Secret Key</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input type="text" name="crm_client_secret" class="form-control" placeholder="Enter CRM Secret Id"
+                                                    autocomplete="off" autofocus="autofocus"
+                                                    value="{{ setting('crm_client_secret', $authUser->id) ?? '' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+
 
                                     <div class="row">
                                         <div class="col-md-12 text-left">
@@ -84,7 +115,7 @@
                                                 <div class="input-group">
                                                     <input type="file" name="software_logo" class="form-control dropify"
                                                         autocomplete="off" autofocus="autofocus"
-                                                        data-default-file="{{ asset(setting('software_logo', auth()->user()->id)) ?? asset('assets/images/logo-sm.png') }}">
+                                                        data-default-file="{{ asset(setting('software_logo', $authUser->id)) ?? asset('assets/images/logo-sm.png') }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -96,7 +127,7 @@
                                                 <label for="email"> Welcome Email Note :</label>
                                                 <div class="input-group">
                                                     <textarea name="welcome_email_note" class="form-control editor"
-                                                        placeholder="please write about the company for new user welcome email" autocomplete="off" autofocus="autofocus"> {{ setting('welcome_email_note', auth()->user()->id) ?? '' }} </textarea>
+                                                        placeholder="please write about the company for new user welcome email" autocomplete="off" autofocus="autofocus"> {{ setting('welcome_email_note', $authUser->id) ?? '' }} </textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -112,16 +143,15 @@
                                 </div>
                             </div>
                         </form>
-                        <br><br><br>
+
                         <div class="row text-center">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                   <a href="#" class="btn btn-primary">Connect With CRM</a>
-                                    {{-- <label for="email"> Welcome Email Note :</label>
-                                    <div class="input-group">
-                                        <textarea name="welcome_email_note" class="form-control editor"
-                                            placeholder="please write about the company for new user welcome email" autocomplete="off" autofocus="autofocus"> {{ setting('welcome_email_note', auth()->user()->id) ?? '' }} </textarea>
-                                    </div> --}}
+                                    <p class="font-weight-bold fs-4">
+                                        <a class="btn btn-primary" href="{{ $connecturl }}">
+                                           Connect With CRM Agency
+                                        </a>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -129,7 +159,7 @@
                 </div>
             </div>
         @endif
-        @if (auth()->user()->role == 0)
+        @if ($authUser->role == 0)
             <div class="col-md-6 mx-auto">
                 <div class="card">
                     <div class="card-body">
@@ -146,7 +176,7 @@
                                                 <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                             </div>
                                             <input type="text" class="form-control" id="clipboardInput"
-                                                value="{{ setting('webhook_url', auth()->user()->id) }}"
+                                                value="{{ setting('webhook_url', $authUser->id) }}"
                                                 aria-label="webhook url" aria-describedby="button-addon2"
                                                 name="webhook_url">
                                             <button class="btn btn-secondary " type="button" id="button-addon2"
@@ -184,7 +214,7 @@
                                                 <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                             </div>
                                             @php
-                                                $location_id = auth()->user()->location;
+                                                $location_id = $authUser->location;
                                             @endphp
                                             <textarea rows="3" class="form-control text-left" id="estimator_iframe" aria-label="estimator_iframe url"
                                                 aria-describedby="button-addon3"><iframe src="{{ route('estimator.index', $location_id) }}" class="estimator" frameborder="0" style="border:none;width:100%;height: 100vh;"  id="{{ $location_id }}"></iframe><script src="{{ asset('assets/js/iframe-resizer.js') }}"></script></textarea>
@@ -225,7 +255,7 @@
             </div>
         @endif
     </div>
-    @if (auth()->user()->role == 0)
+    @if ($authUser->role == 0)
         <div class="row">
             <div class="col-md-12 mx-auto">
                 <div class="card">
@@ -246,7 +276,7 @@
                                                 </span>
                                             </div>
                                             <input type="text" class="form-control" id="currency_symbol"
-                                                value="{{ setting('estimate_currency_symbol', auth()->user()->id) ?? '' }}"
+                                                value="{{ setting('estimate_currency_symbol', $authUser->id) ?? '' }}"
                                                 placeholder="$, £, €" aria-label="estimate_currency_symbol"
                                                 aria-describedby="button-addon4" name="estimate_currency_symbol">
                                         </div>
@@ -265,7 +295,7 @@
                                             {{-- {{ dd() }} --}}
                                             <input type="text" class="form-control color-input"
                                                 id="estimator_primary_color"
-                                                value="{{ setting('estimator_primary_color', auth()->user()->id) ?? '#ED2846' }}"
+                                                value="{{ setting('estimator_primary_color', $authUser->id) ?? '#ED2846' }}"
                                                 aria-describedby="button-addon4" name="estimator_primary_color">
                                         </div>
                                     </div>
@@ -283,7 +313,7 @@
                                             {{-- {{ dd() }} --}}
                                             <input type="text" class="form-control" placeholder="https//example.com"
                                                 id="thank_you_page_url"
-                                                value="{{ setting('thank_you_page_url', auth()->user()->id) ?? $loc->location ?? '' }}"
+                                                value="{{ setting('thank_you_page_url', $authUser->id) ?? $loc->location ?? '' }}"
                                                 aria-describedby="button-addon4" name="thank_you_page_url">
                                         </div>
                                     </div>
@@ -301,7 +331,7 @@
                                             {{-- {{ dd() }} --}}
                                             <input type="text" class="form-control" placeholder="Contact us for this estimate"
                                                 id="last_slide_button_text"
-                                                value="{{ setting('last_slide_button_text', auth()->user()->id) ?? 'Contact us for this estimate' }}"
+                                                value="{{ setting('last_slide_button_text', $authUser->id) ?? 'Contact us for this estimate' }}"
                                                 aria-describedby="button-addon4" name="last_slide_button_text">
                                         </div>
                                     </div>
@@ -319,7 +349,7 @@
 
                                             <input type="number" class="form-control" placeholder="min fee"
                                                 id="min_fee"
-                                                value="{{ setting('min_fee', auth()->user()->id) ?? 0 }}"
+                                                value="{{ setting('min_fee', $authUser->id) ?? 0 }}"
                                                 aria-describedby="button-addon4" name="min_fee">
                                         </div>
                                     </div>
@@ -338,7 +368,7 @@
                                         <label for="map_instructions">Map Slide Instructions</label>
                                         <textarea class="form-control " rows="4" name="map_slide_instructions"
                                             placehpolder="write your instructions to show on the map slide">
-                                        {!! trim(setting('map_slide_instructions', auth()->user()->id) ?? '') !!}
+                                        {!! trim(setting('map_slide_instructions', $authUser->id) ?? '') !!}
                                     </textarea>
                                     </div>
                                 </div>
@@ -368,7 +398,7 @@
                                             <textarea class="form-control " rows="2"
                                                 name="error_message_{{ strtolower(str_replace(' ', '', $key)) }}"
                                                 placehpolder="write the error message if {{ $key }} is missing during survey completions">
-                                            {{ trim(setting('error_message_' . strtolower(str_replace(' ', '', $key)), auth()->user()->id) ?? $value) }}
+                                            {{ trim(setting('error_message_' . strtolower(str_replace(' ', '', $key)), $authUser->id) ?? $value) }}
                                         </textarea>
                                         </div>
                                     </div>
@@ -386,6 +416,19 @@
                 </div>
             </div>
         </div>
+        @if ($authUser->separate_location == 1)
+        <div class="row text-center">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <p class="font-weight-bold fs-4">
+                        <a class="btn btn-primary" href="{{ $connecturl }}">
+                           Connect With CRM Location
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        @endif
     @endif
 
 @endsection
@@ -396,7 +439,7 @@
 
     <script>
         // $(document).ready(function() {
-        //     var location_id = "{{ auth()->user()->location }}";
+        //     var location_id = "{{ $authUser->location }}";
 
         //     var url = "{{ route('estimator.index') }}/"+location_id;
         //     var iframe = '<iframe src="' + url + '"  frameborder="0" style="border:none;width:100%;" scrolling="no" id="'+location_id+'"></iframe>';

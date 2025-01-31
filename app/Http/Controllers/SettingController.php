@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\CRM;
+use App\Jobs\AddTagJob;
+use App\Jobs\SendDataToWebhookUrl;
+use App\Jobs\SendSurvey;
 use App\Models\Estimate;
 use App\Models\Setting;
 use App\Models\User;
@@ -18,7 +21,23 @@ class SettingController extends Controller
 {
     public function siteSettings()
     {
-        return view('admin.settings.setting');
+        $settings = Setting::pluck('value', 'name')->toArray();
+        $scopes = CRM::$scopes;
+        $company_name = null;
+        $company_id = null;
+        $connecturl = CRM::directConnect();
+        $authuser = loginUser();
+        $crmauth = $authuser->crmtokenagency;
+        $role = $authuser->role;
+        $location_id = $authuser->location;
+
+        try {
+            if ($crmauth) {
+                list($company_name, $company_id) = [json_decode($crmauth?->meta)->company_name ?? '', $crmauth?->company_id ?? ''];// CRM::getCompany($authuser);
+            }
+        } catch (\Exception $e) {
+        }
+        return view('admin.settings.setting', get_defined_vars());
     }
 
 
@@ -36,15 +55,20 @@ class SettingController extends Controller
             return redirect()->back()->withErrors($ch)->withInput();
         }
 
+        // $req->merge([
+        //     'tags' => ['Instant Fence Quote', 'Incomplete']
+        // ]);
         $response = saveContactToGhl($req);
 
         $res = [
             'status' => 'success',
-            'contact_id' => $response->contact_id,
+            // 'contact_id' => $response->contact_id,
             'estimate_id' => $response->estimate_id,
         ];
-
-        add_tags($response->contact_id, ['Instant Fence Quote', 'Incomplete']);
+        // $location = find_location($req->location);
+        // add_tags($response->contact_id, ['Instant Fence Quote', 'Incomplete']);
+        // $token = getDBCRMToken($location->location);
+        // AddTagJob::dispatch($response->contact_id, ['Instant Fence Quote', 'Incomplete'], $token)->onQueue(env('JOB_QUEUE_TYPE'));
 
 
         return response()->json($res);
@@ -113,44 +137,61 @@ class SettingController extends Controller
 
     public function estimatorSave(Request $request)
     {
+        // dd($request->all());
         $location = find_location($request->location_id);
-        $send =  sendSurvey($request);
+        SendSurvey::dispatch($request->all())->onQueue(env('JOB_QUEUE_TYPE'));
+        // $send =  sendSurvey($request);
         $res = [
             'status' => 'error',
             'message' => 'There is an error while sending your estimations. Please contact us directly with via email or phone'
         ];
-        $web = sendToWebhookUrl($request->all(), $location->id);
-        if ($send) {
-
+        SendDataToWebhookUrl::dispatch($request->all(), $location->id)->onQueue(env('JOB_WEBHOOK_TYPE'))->delay(10);
+        // $web = sendToWebhookUrl($request->all(), $location->id);
+        // if ($send) {
             if (check_ghl($location)) {
+                $locationId = $location->location;
+                $userID = $location->id;
+                // $token = getDBCRMToken($request->location_id);
 
+                $uuid = $request['estimator_id'] ?? $request['uuid'];
+                $chk = Estimate::where('uuid', $uuid)->first();
 
-                $ghl_tags = add_tags($request->contact_id, ['Instant Fence Quote', 'Complete']);
+                $contactId = $chk->contact_id;
 
-
-                if ($ghl_tags) {
+                if($contactId){
+                    AddTagJob::dispatch($contactId, ['Instant Fence Quote', 'Complete'],  $userID, $locationId)->onQueue(env('JOB_QUEUE_TYPE'));
                     $res = [
                         'status' => 'success',
                         'message' => 'Your Fence Estimate has been Received. We will contact you soon.',
                     ];
-                    $this->saveContact($request, $request->contact_id);
-                } else {
+                    $this->saveContact($request, $contactId);
+                }else {
                     $res = [
-                        'status' => 'error',
-                        'message' => 'There is an error while sending your estimations. Please contact us directly via email or phone',
-                    ];
+                                'status' => 'error',
+                                'message' => 'There is an error while sending your estimations. Please contact us directly via email or phone',
+                            ];
                 }
-
-
-
-
+                // $ghl_tags = add_tags($request->contact_id, ['Instant Fence Quote', 'Complete'], $token);
+                // $ghl_tags = add_tags($request->contact_id, ['Instant Fence Quote', 'Complete']);
+                // if ($ghl_tags && property_exists($ghl_tags, 'tags')) {
+                //     $res = [
+                //         'status' => 'success',
+                //         'message' => 'Your Fence Estimate has been Received. We will contact you soon.',
+                //     ];
+                //     $this->saveContact($request, $request->contact_id);
+                // } else {
+                //     $res = [
+                //         'status' => 'error',
+                //         'message' => 'There is an error while sending your estimations. Please contact us directly via email or phone',
+                //     ];
+                // }
             } else {
                 $res = [
                     'status' => 'success',
                     'message' => 'Your Fence Estimate has been Received. We will contact you soon.',
                 ];
             }
-        }
+        // }
         return response()->json($res);
     }
 

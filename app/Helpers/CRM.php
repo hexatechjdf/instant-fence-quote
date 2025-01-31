@@ -2,28 +2,27 @@
 
 namespace App\Helpers;
 
-use App\Models\CrmAuths;
+use App\Models\CrmToken;
 use Illuminate\Support\Facades\Cache;
-use App\Helper\gCache;
+use App\Helpers\gCache;
 
 class CRM
 {
 
     protected static $base_url = 'https://services.leadconnectorhq.com/';
     protected static $version = '2021-07-28';
-    protected static $crm = CrmAuths::class;
+    protected static $crm = CrmToken::class;
     public static $lang_com = 'Company';
     public static $lang_loc = 'Location';
 
     protected static $userType = ['Company' => 'company_id', 'Location' => 'location_id'];
-    //oauth.write oauth.readonly locations/customFields.write  locations/customFields.readonly
-    public static $scopes = "locations.readonly companies.readonly oauth.readonly oauth.write locations/customFields.readonly locations/customFields.write medias.readonly medias.write";
+    public static $scopes = "locations.write locations.readonly locations/customValues.readonly locations/customValues.write locations/customFields.readonly locations/customFields.write locations/tags.write locations/tags.readonly contacts.readonly contacts.write oauth.write oauth.readonly medias.readonly medias.write";
     protected static $no_token = 'No Token';
     protected static $no_record = 'No Data';
 
     public static function getDefault($key, $def = '')
     {
-        $def = supersetting($key, $def);
+        $def = setting($key);
         return $def;
     }
 
@@ -37,7 +36,7 @@ class CRM
         } else {
             $key = json_encode($where);
         }
-
+// dd(static::$crm::where($where)->first(), $where);
         return gCache::remember($key, 3 * 60, function () use ($where) {
             return static::$crm::where($where)->first();
         });
@@ -50,9 +49,13 @@ class CRM
         $type = $code->userType;
         if ($type == self::$lang_loc) {
             $where['location_id'] = $code->locationId ?? '';
+            $where['user_type'] = self::$lang_loc;
         }
         $cmpid = $code->companyId ?? "";
         if (!empty($cmpid)) {
+            if ($type == self::$lang_com) {
+            $where['user_type'] = self::$lang_com;
+            }
             $where['company_id'] = $cmpid;
         }
         $already = true;
@@ -65,10 +68,9 @@ class CRM
                 $loc->user_type = $type;
                 $loc->company_id = $cmpid;
                 $loc->user_id = $company_id;
-                $loc->crm_user_id = $code->user_id ?? '';
+                $loc->crm_user_id = $code->userId ?? '';
             }
         }
-
         $loc->expires_in = $code->expires_in ?? 0;
         $loc->access_token = $code->access_token;
         $loc->refresh_token = $code->refresh_token;
@@ -81,6 +83,45 @@ class CRM
         }
         return $loc;
     }
+
+
+
+    // public static function saveCrmToken($code, $company_id, $loc = null)
+    // {
+    //     $where = [];//'user_id' => $company_id
+    //     $type = $code->userType;
+    //     if ($type == self::$lang_loc) {
+    //         $where['location_id'] = $code->locationId ?? '';
+    //     }
+    //     $cmpid = $code->companyId ?? "";
+    //     if (!empty($cmpid)) {
+    //         $where['company_id'] = $cmpid;
+    //     }
+    //     $already = true;
+    //     if (!$loc) {
+    //         $already = false;
+    //         $loc = self::getCrmToken($where);
+    //         if (!$loc) {
+    //             $loc = new static::$crm();
+    //             $loc->location_id = $code->locationId ?? '';
+    //             $loc->user_type = $type;
+    //             $loc->company_id = $cmpid;
+    //             $loc->user_id = $company_id;
+    //             $loc->crm_user_id = $code->userId ?? '';
+    //         }
+    //     }
+    //     $loc->expires_in = $code->expires_in ?? 0;
+    //     $loc->access_token = $code->access_token;
+    //     $loc->refresh_token = $code->refresh_token;
+    //     $loc->save();
+
+    //     self::rememberToken($loc);
+
+    //     if ($already) {
+    //         $loc->refresh();
+    //     }
+    //     return $loc;
+    // }
 
     public static function rememberToken($token)
     {
@@ -103,19 +144,25 @@ class CRM
             }
             $headers = $headers1;
         }
+        $isFile = strpos($url, 'upload-file') !== false;
+        // \Log::info('in makeCall ' . $url . $isFile);
         $jsonheader = 'content-type: application/json';
         if (!empty($data)) {
-            if ((is_array($data) || is_object($data))) {
+
+            if (!$isFile) {
+                if ((is_array($data) || is_object($data))) {
+                    if ($json) {
+                        $data = json_encode($data);
+                    } else {
+                        $data = json_decode(json_encode($data), true);
+                        $data = http_build_query($data);
+                    }
+                }
                 if ($json) {
-                    $data = json_encode($data);
-                } else {
-                    $data = json_decode(json_encode($data), true);
-                    $data = http_build_query($data);
+                    $headers[] = $jsonheader;
                 }
             }
-            if ($json) {
-                $headers[] = $jsonheader;
-            }
+
             if ($methodl != 'get') {
                 curl_setopt_array($curl, [CURLOPT_POSTFIELDS => $data]);
             } else {
@@ -194,14 +241,48 @@ class CRM
         return $tokenx;
     }
 
-    public static function getLocationAccessToken($user_id, $location_id, $token = null, $retries = 0)
+    public static function getLocationAccessTokenFirstTimeByCompany($user_id, $location_id, $retries = 0)
     {
+        $companyToken =  static::$crm::where(['user_id'=> 1])->first();
+        $resp = null;
+        if ($companyToken && !is_int($companyToken)) {
+
+            $response = self::makeCall(static::$base_url . "oauth/locationToken", 'POST', "companyId=" . $companyToken->company_id . "&locationId=" . $location_id, [
+                "Accept: application/json",
+                "Authorization: Bearer " . $companyToken->access_token,
+                "Content-Type: application/x-www-form-urlencoded",
+                "Version: " . static::$version,
+            ], false);
+            $resp = json_decode($response);
+            //  \Log::info(['newfetchToken',$resp]);
+            if ($resp && property_exists($resp, 'access_token')) {
+                $resp = self::saveCrmToken($resp, $user_id);
+            } else if (self::isExpired($resp) && $retries == 0) {
+                \Log::info('Token Expired');
+                list($is_refresh, $companyToken) = self::getRefreshToken(1, $companyToken, true);
+                if ($is_refresh) {
+                    return self::getLocationAccessTokenFirstTimeByCompany($user_id, $location_id, $retries + 1);
+                }
+            }
+        }
+        return $resp;
+    }
+
+    public static function getLocationAccessToken($user_id, $location_id, $userType = null, $token = null, $retries = 0)
+    {
+        \Log::info('step 23');
+        if($userType == null){
+            $userType = self::$lang_com;
+        }else{
+            $userType = 'Location';
+        }
         if (!$token) {
-            $token = self::getCrmToken(['user_id' => $user_id, 'user_type' => self::$lang_com]);
+            $token = self::getCrmToken(['user_id' => $user_id, 'user_type' => $userType]);
         }
         $resp = null;
-        if ($token) {
+        if ($token && !is_int($token)) {
 
+    // \Log::info('Locaion in function ='. $location_id);
             $response = self::makeCall(static::$base_url . "oauth/locationToken", 'POST', "companyId=" . $token->company_id . "&locationId=" . $location_id, [
                 "Accept: application/json",
                 "Authorization: Bearer " . $token->access_token,
@@ -240,13 +321,14 @@ class CRM
             //$type = $oldtype ?? $type;
             $code = json_decode($code);
         }
-        //\Log::info(['CCode',$code]);
+        \Log::info(['CCode',$code]);
         if ($code) {
 
             if (!$company_id) {
                 //return $error;
             }
             if (property_exists($code, 'access_token')) {
+                \Log::info('inside access token');
                 return [true, self::saveCrmToken($code, $company_id, $loc)];
             }
 
@@ -284,7 +366,7 @@ class CRM
         try {
             list($is_refresh, $location) = $loc_block->block($loc_time, function () use ($code, $company_id, $location) {
                 try {
-                    $location->refresh();
+                    $location->urefresh();
                     if ($code != $location->refresh_token) {
                         return [true, $location];
                     }
@@ -325,6 +407,7 @@ class CRM
         // dd($url1, $method, $data, $headers, $json);
         $cd = self::makeCall($url1, $method, $data, $headers, $json);
         $bd = json_decode($cd);
+        // dd($bd );
         // \Log::info(['newfetch',$bd]);
         if (self::isExpired($bd) && $retries == 0) {
             list($is_refresh, $token) = self::getRefreshToken($company_id, $company, true);
@@ -442,7 +525,10 @@ class CRM
             if (strpos($url, 'custom-values') !== false) {
                 $url = str_replace('-values', 'Values', $url);
             }
-            $url = 'locations/' . $location_id . '/' . $url;
+            if(strpos($url, 'contacts') === false){
+                $url = 'locations/' . $location_id . '/' . $url;
+            }
+
         } else if ($methodl == 'get') {
             $urlap = self::urlFix($url);
             if (strpos($url, 'location_id=') === false && strpos($url, 'locationId=') === false && strpos($url, 'locations/') === false) {
@@ -500,8 +586,14 @@ class CRM
         }
         $url1 = $main_url . $url;
         // $usertype = $location->user_type;
+        $isFile = strpos($url1, 'upload-file') !== false;
+        // dd($isFile);
         $dat = '';
         if (!empty($data)) {
+            if ($isFile) {
+                $headers['Content-Type'] = 'multipart/form-data';
+                $dat = $data;
+            } else {
             if (!is_string($data)) {
                 $dat = json_encode($data);
             } else {
@@ -540,11 +632,12 @@ class CRM
                 }
             }
         }
+        }
 
         if (strpos($url1, 'status') !== false) {
         }
-
-        //dd($url1, $method, $dat, $headers, $json);
+        // $url = 'https://services.leadconnectorhq.com/medias/upload-file';
+        // dd($url1, $method, $dat, $headers, $json);
         $cd = self::makeCall($url1, $method, $dat, $headers, $json);
 
         // return $cd;

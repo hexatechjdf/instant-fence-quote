@@ -49,6 +49,17 @@
                                  @enderror
                              </div>
                         </div>
+
+                        <div class="form-group row">
+                            <div class="col-md-12 mt-3 mb-3">
+                                <!-- Toggle Switch -->
+                                <input type="checkbox" id="separate_location" class="form-check-input" name="separate_location" @if ($data->separate_location == 1)
+                                checked
+                                @endif>
+                                <label for="separate_location" class="form-check-label ml-2">Separate location? <strong class="ml-3"> ( Note: </strong><small class="text-danger"> Need to be Toggle ON if the user have a separate location </small>)</label>
+                            </div>
+                        </div>
+
                         <div class="form-group row" >
                             <div class="col-md-12">
                                 <label for="api_key">Rogue CRM API Key <strong class="ml-3"> ( Note: </strong><small class="text-danger"> Insert only If You want to send the estimate informations to the Rogue CRM </small>)</label>

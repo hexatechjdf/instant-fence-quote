@@ -22,6 +22,7 @@
     <div class="row">
         <div class="col-md-12 text-right">
             <a href="{{ route('user.add') }}" class="btn btn-gradient-primary px-4 mt-0 mb-3"><i class="mdi mdi-plus-circle-outline mr-2"></i>Add New</a>
+            <a href="{{ route('user.manage-subaccount') }}" class="btn btn-gradient-primary px-4 mt-0 mb-3"><i class="mdi mdi-plus-circle-outline mr-2"></i>Manage Subaccount</a>
         </div>
         <div class="col-md-12">
             <div class="card">
@@ -32,7 +33,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
-                               
+                                <th>Separate Location</th>
                                 <th>Status</th>
                                 <th class="text-right">Action</th>
                             </tr><!--end tr-->
@@ -59,6 +60,7 @@
             columns: [
                 {data: 'name', name: 'name'},
                 {data: 'email', name: 'email'},
+                {data: 'separate_location', name: 'separate_location'},
               //  {data: 'ghl_api_key', name: 'ghl_api_key'},
                 {data: 'status', name: 'status' , searchable :false},
 

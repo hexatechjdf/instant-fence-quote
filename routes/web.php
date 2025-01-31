@@ -2,6 +2,7 @@
 header('X-Frame-Options: ALLOWALL');
 header('Access-Control-Allow-Origin: *');
 
+use App\Helpers\CRM;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomFieldController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -15,9 +16,15 @@ use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ExtraPageController;
 use App\Http\Controllers\CustomPageController;
-use App\Models\Category;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
+use App\Http\Controllers\CRMConnectionController;
+use App\Jobs\AgencyUserAutoAuth;
+use App\Jobs\GetLocationAccessToken;
+use App\Jobs\InCompleteEstimatesTriger;
+use App\Jobs\LocationUserAutoAuth;
+use App\Jobs\ProcessRefreshToken;
+use App\Jobs\TriggerCustomField;
+use App\Models\User;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -33,6 +40,62 @@ Route::get('/migrate', function () {
     // \Artisan::call('migrate');
 });
 
+
+Route::get('/process-code', function () {
+
+
+    GetLocationAccessToken::dispatch(2, 'JoqQ51Bl3LEmR42l6LrG', 'viaAgency')->onQueue(env('JOB_QUEUE_TYPE'));
+
+    return 'Job Processed';
+
+
+    // $companies = User::where(['role' => 0, 'is_active' => true])->get();
+    // foreach ($companies as $company) {
+    //     //$estimates = Estimate::where([['is_completed', '=', false], ['created_at', '>=', Carbon::now()->subMinutes(25)->format('Y-m-d H:i:s')]])->where('company_id', $company->id);
+    //     $estimates = Estimate::where('company_id', $company->id)->latest()->take(5);
+
+    //         if (check_ghl($company)) {
+    //             $estimates = $estimates->get();
+    //             //Job again
+    //             foreach ($estimates as $estimate) {
+    //                 if($estimate->contact_id !== null && $estimate->contact_id !== '' && !empty($estimate->contact_id)){
+    //                     SendOneEstimate::dispatch($estimate, $company->location, $company->id)->onQueue(env('JOB_QUEUE_TYPE'));
+    //                     return 'done';
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    // exit;
+
+    // $user_id = 1;
+    // AutoAuthUser::dispatch($user_id)->onQueue(env('JOB_QUEUE_TYPE'));
+    // return 'Job Run';
+
+//     $res = CRM::crmV2Loc(164, 'HuVkfWx59Pv4mUMgGRTp', 'contacts?limit=100', 'get');
+// dd($res);
+
+    $adminUserId = 1;
+    $urlmain = 'locations/search';
+    $userIds = User::where(['role'=> 0, 'is_active' => 1, 'separate_location' => 0])->pluck('location', 'id')->toArray();
+    $locations = CRM::agencyV2($adminUserId, $urlmain);
+
+    if($locations && property_exists($locations, 'locations')){
+        // $locations = json_decode($locations);
+        $locations = $locations->locations;
+        foreach ($locations as $key => $loc) {
+            $locationId = $loc->id;
+            foreach ($userIds as $currentUserId => $currentUserLoc) {
+                if($locationId == $currentUserLoc){
+                CRM::getLocationAccessToken(1, $locationId);
+                // CRM::getLocationAccessToken($currentUserId, $locationId);
+                }
+            }
+        }
+        return 'Location Access Token Saved';
+    }
+    return 'Some thing went wrong';
+});
 
 Route::get('/cache-clear', function () {
     \Artisan::call('optimize:clear');
@@ -80,6 +143,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/is-active/{id?}', [UserController::class, 'isActive'])->name('is-active');
         Route::get('/approve-all', [UserController::class, 'approveAll'])->name('approve-all');
         Route::get('/delete-all', [UserController::class, 'deleteAll'])->name('delete-all');
+        Route::get('/manage-subaccount', [UserController::class, 'manageSubaccount'])->name('manage-subaccount');
+        Route::post('/connect-locations', [UserController::class, 'connectLocations'])->name('connect-locations');
+        Route::post('/save-user-detail', [UserController::class, 'saveUserDetail'])->name('save-user-detail');
+
+        // Route::get('/user/locations', [UserController::class, 'getLocations'])->name('get-locations');
+
+
     });
 
     Route::prefix('categories')->middleware('user')->name('category.')->group(function () {
@@ -129,7 +199,7 @@ Route::middleware('auth')->group(function () {
         Route::get('Site-Settings', [SettingController::class, 'siteSettings'])->name('index');
         Route::post('Site-Settings', [SettingController::class, 'siteSettingsSave'])->name('save');
     });
-    
+
     //products
     Route::prefix('products')->name('product.')->group(function () {
         Route::get('/list', [ProductController::class, 'list'])->name('list');
@@ -192,4 +262,30 @@ Route::prefix('pages')->name('extra-page.')->group(function () {
     Route::get('/terms-of-services', [ExtraPageController::class, 'termOfService'])->name('term-of-service');
 });
 
-Route::get('/cron/incomplete-estimates',[EstimateController::class,'InCompleteEstimates']);
+//Send data in the Job work here
+// Route::get('/cron/incomplete-estimates',[EstimateController::class,'InCompleteEstimates']);
+
+Route::get('/cron/incomplete-estimates', function () {
+    InCompleteEstimatesTriger::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
+});
+
+Route::get('/cron/set-customfields', function () {
+    TriggerCustomField::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
+});
+
+Route::get('/cron-jobs/process_refresh_token', function () {
+    ProcessRefreshToken::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
+    // dispatch((new CheckCustomValuesJob('HuVkfWx59Pv4mUMgGRTp', 9)));
+    // return response()->json(['success' => 'We are matching custom values']);
+});
+
+
+//Mo need of it now
+Route::get('/cron/auto-auth-user', function () {
+    AgencyUserAutoAuth::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
+    LocationUserAutoAuth::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
+});
+
+Route::prefix('authorization')->name('crm.')->group(function () {
+    Route::get('/crm/oauth/callback', [CRMConnectionController::class, 'crmCallback'])->name('oauth_callback');
+});

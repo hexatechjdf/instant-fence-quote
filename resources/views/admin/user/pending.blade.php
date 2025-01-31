@@ -39,7 +39,7 @@
                                 <tr>
                                     <th>Name</th>
                                     <th>Email</th>
-
+                                    <th>Separate Location</th>
                                     <th>Status</th>
                                     <th class="text-right">Action</th>
                                 </tr>
@@ -71,6 +71,9 @@
                 {
                     data: 'email',
                     name: 'email'
+                }, {
+                    data: 'separate_location',
+                    name: 'separate_location'
                 },
                 //  {data: 'ghl_api_key', name: 'ghl_api_key'},
                 {

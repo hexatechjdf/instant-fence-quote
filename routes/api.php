@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\FenceFtAvailableController;
 use App\Http\Controllers\Api\FtAvailableController;
 use App\Http\Controllers\Api\FenceController;
 use App\Http\Controllers\EstimateController;
+use App\Http\Controllers\ReactApiController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, Accept, Accept-Language, X-Authorization');
 Route::post('/webhook/user', function () {
     $data = file_get_contents('php://input');
     if (!empty($data)) {
@@ -48,3 +50,9 @@ Route::post('/webhook/send', [EstimateController::class, 'sendWebhook']);
 
 //create products
 Route::post('/automatic-user-creation', [WebhookController::class, 'createProduct']);
+Route::post('/automatic-user-creation-new', [WebhookController::class, 'createProductNew']);
+
+// React API Controller
+Route::post('sso-token-verify', [ReactApiController::class, 'ssoTokenVerify']);
+Route::post('search-contact', [ReactApiController::class, 'searchContact']);
+Route::post('upload-contact-image', [ReactApiController::class, 'uploadContactImage']);
