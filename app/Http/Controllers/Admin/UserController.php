@@ -302,15 +302,31 @@ class UserController extends Controller
     public function saveUserDetail(Request $request)
     {
         $data = $request->all();
+        $errors = [];
         foreach ($data as $key => $d) {
-            if ($d['is_manual'] == true) {
-                $user = User::find($d['userId']);
-                if ($user) {
-                    $user->location = $d['locationId'];
-                    $user->save();
+            $user = User::find($d['userId']);
+            if ($user) {
+                // Check if the locationId is already assigned to another user
+                $exists = User::where('id', '!=', $d['userId'])
+                    ->where('location', $d['locationId'])
+                    ->exists();
+                if ($exists) {
+                    $errors[] = "Location ID {$d['locationId']} is already assigned to another user.";
+                    continue;
                 }
+                if($d['is_manual'] == true){
+                    $user->separate_location = 1;
+                }
+                // Save location if it's unique for this user
+                $user->location = $d['locationId'];
+                $user->save();
+            } else {
+                $errors[] = "User ID {$d['userId']} not found.";
             }
         }
-        return response()->json(['status' => 'success',  'message' => 'Data saved successfully']);
+        if (!empty($errors)) {
+            return response()->json(['status' => 'error', 'message' => $errors], 422);
+        }
+        return response()->json(['status' => 'success', 'message' => 'Data saved successfully']);
     }
 }

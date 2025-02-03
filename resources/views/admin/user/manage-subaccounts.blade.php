@@ -18,6 +18,7 @@
         </div>
     </div>
 
+    <p id="errorMesssage"></p>
     <div class="row">
         <div class="col-md-12 mb-3">
             <div class="card p-3">
@@ -124,7 +125,7 @@
                         isManual = true;
                     }
 
-                    if (userId && locationId) {
+                    if (userId) {
                         userData.push({
                             userId: userId,
                             locationId: locationId,
@@ -158,7 +159,14 @@
                         toastr.success(response.message);
                     },
                     error: function(xhr, status, error) {
-                        toastr.error('Something went wrong');
+                        let response = xhr.responseJSON;
+
+                        if (response && response.status === "error" && Array.isArray(response.message)) {
+                            let errorMessages = response.message.join("<br>");
+                            $("#errorMesssage").html(errorMessages); // Update error message in <p>
+                        } else {
+                            toastr.error(error);
+                        }
                     },
                     complete: function() {
                         button.disabled = false; // Re-enable button after request
