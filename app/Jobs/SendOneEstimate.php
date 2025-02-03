@@ -42,7 +42,7 @@ class SendOneEstimate implements ShouldQueue
         \Log::info('Step 4');
         SendSurvey::dispatch($estimate, 'incomplete')->onQueue(env('JOB_QUEUE_TYPE'));
         \Log::info('Step 7');
-        SendDataToWebhookUrl::dispatch($estimate, $companyId)->onQueue(env('JOB_QUEUE_TYPE'));
+        SendDataToWebhookUrl::dispatch($estimate, $companyId)->onQueue(env('JOB_WEBHOOK_TYPE'));
         \Log::info('Step 9');
 
         //contactId, Tag, User ID, User Location

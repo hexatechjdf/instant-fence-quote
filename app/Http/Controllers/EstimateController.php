@@ -38,13 +38,13 @@ class EstimateController extends Controller
         } else {
             $location = auth()->user();
         }
-       SendSurvey::dispatch($data, 'resend')->onQueue(env('JOB_QUEUE_TYPE'));
+       SendSurvey::dispatch($data, 'resend')->onQueue(env('JOB_DASHBOARD_TYPE'));
         // $send = sendSurvey($data, 'resend');
-        SendDataToWebhookUrl::dispatch($data, $location->id)->onQueue(env('JOB_QUEUE_TYPE'));
+        SendDataToWebhookUrl::dispatch($data, $location->id)->onQueue(env('JOB_WEBHOOK_TYPE'));
         // $token = CrmToken::where('location_id', $location->location)->first();
         // $web = sendToWebhookUrl($data, $location->id);
         if (check_ghl($location)) {
-            AddTagJob::dispatch($data->contact_id, 'Estimate Resent', $location->id, $location->location)->onQueue(env('JOB_QUEUE_TYPE'));
+            AddTagJob::dispatch($data->contact_id, 'Estimate Resent', $location->id, $location->location)->onQueue(env('JOB_DASHBOARD_TYPE'));
         }
 
         return response()->json([
@@ -69,7 +69,7 @@ class EstimateController extends Controller
 
         try {
             SendDataToWebhookUrl::dispatch($estimate, $location->id)->onQueue(env('JOB_WEBHOOK_TYPE'));
-            SendSurvey::dispatch($estimate, 'delete')->onQueue(env('JOB_QUEUE_TYPE'));
+            SendSurvey::dispatch($estimate, 'delete')->onQueue(env('JOB_DASHBOARD_TYPE'));
             // $send = sendSurvey($estimate, 'delete');
             // $web = sendToWebhookUrl($estimate, $location->id);
 
@@ -209,6 +209,8 @@ class EstimateController extends Controller
         \Log::info('Step 1');
         InCompleteEstimatesTriger::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
     }
+
+    //Not USeable now 
     public function InCompleteEstimates1()
     {
 

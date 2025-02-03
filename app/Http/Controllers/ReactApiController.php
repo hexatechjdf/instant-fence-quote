@@ -19,7 +19,7 @@ class ReactApiController extends Controller
     public function ssoTokenVerify(Request $request)
     {
         try {
-            $ssoKey = env('SSO_KEY', null);
+            $ssoKey = setting('sso_key');
             if (!$ssoKey) {
                 return response()->json(['status' => false, 'message' => 'SSO key is not configured.']);
             }
@@ -121,7 +121,7 @@ class ReactApiController extends Controller
     public function searchContact(Request $request)
     {
         // \Log::info($request->all());
-        $ssoKey = env('SSO_KEY', null);
+        $ssoKey = setting('sso_key');
         if (!$ssoKey) {
             return response()->json(['status' => false, 'message' => 'SSO key is not configured.']);
         }
@@ -168,7 +168,7 @@ class ReactApiController extends Controller
     {
         try {
             \Log::info($request->all());
-            $ssoKey = env('SSO_KEY', null);
+            $ssoKey = setting('sso_key');
             if (!$ssoKey) {
                 return response()->json(['status' => false, 'message' => 'SSO key is not configured.']);
             }
@@ -315,15 +315,6 @@ class ReactApiController extends Controller
                 }
 
                 sendEmail($credetials);
-                // $findloc = User::firstOrNew(['location' => $request->id])->fill([
-                //     'name' => $request->name ?? '',
-                //     'location' => $request->id,
-                //     'role' => 0,
-                //     'password' =>  Hash::make($password),
-                //     'email' => $userEmail,
-                //     'is_active' => 1,
-                //     'separate_location' => 0,
-                // ])->save();
 
                 return response()->json(['status' => 'success', 'message' => "Location Data Saved"]);
             }
@@ -334,50 +325,4 @@ class ReactApiController extends Controller
         return 'Received';
     }
 
-
-
-    // public function uploadContactImage(Request $request)
-    // {
-    //     \Log::info($request->all());
-    //     $ssoKey = env('SSO_KEY', null);
-    //     if (!$ssoKey) {
-    //         return response()->json(['status' => false, 'message' => 'SSO key is not configured.']);
-    //     }
-    //     $decrypted = self::decryptToken($request->ssoToken, $ssoKey);
-    //     if ($decrypted === false) {
-    //         return response()->json(['status' => false]);
-    //     } else {
-    //         $decrypted_data = json_decode($decrypted, true);
-    //         $location_id = isset($decrypted_data['activeLocation']) ? $decrypted_data['activeLocation'] : null;
-    //         $user = User::where('location', $location_id)->first();
-    //         if (!$user) {
-    //             return response()->json(['status' => false, 'message' => "User location not found"]);
-    //         }
-
-    //         if ($user) {
-    //             $token = CrmToken::where(['location_id' => $location_id])->first();
-    //             \Log::info($request->file('canvasImage')->isValid());
-    //             if (!$request->hasFile('canvasImage') || !$request->file('canvasImage')->isValid()) {
-    //                 return response()->json(['status' => false, 'message' => 'No valid image file found.']);
-    //             }
-    //             $imageFile = $request->file('canvasImage');
-    //             $payload['file'] = new \CURLFile($imageFile->getRealPath(), $imageFile->getMimeType(), $imageFile->getClientOriginalName());
-    //             $imgNameCustom = 'caseybyzahid' . $location_id . $request->contactId . str_replace(' ', '', now());
-    //             // dd($imgNameCustom);
-    //             $payload['name'] = $imgNameCustom;
-    //             $responseUploadFile = CRM::crmV2Loc($user->id, $location_id, 'medias/upload-file', 'POST', $payload, $token);
-    //             // dd( $responseUploadFile);
-
-    //             sleep(5);
-    //             if ($responseUploadFile && property_exists($responseUploadFile, 'fileId')) {
-    //                 $contactId =  $request->contactId;
-    //                 $userId = $user->id;
-    //                 UploadContactImage::dispatch($token, $imgNameCustom, $location_id, $userId, $contactId)->onQueue(env('JOB_QUEUE_TYPE'));
-    //                 return response()->json(['status' => true, 'message' => 'Image saving is in progress']);
-    //             }
-
-    //             return response()->json(['status' => false, 'message' => 'Something went wrong - no data found']);
-    //         }
-    //     }
-    // }
 }

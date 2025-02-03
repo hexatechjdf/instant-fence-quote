@@ -328,7 +328,6 @@ class CRM
                 //return $error;
             }
             if (property_exists($code, 'access_token')) {
-                \Log::info('inside access token');
                 return [true, self::saveCrmToken($code, $company_id, $loc)];
             }
 

@@ -108,6 +108,21 @@
                                     </div>
 
 
+                                    <div class="col-md-12 text-left">
+                                        <div class="form-group">
+                                            <label for="sso_key">SSO Key</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input type="text" name="sso_key" class="form-control" placeholder="Enter SSO Key "
+                                                    autocomplete="off" autofocus="autofocus"
+                                                    value="{{ setting('sso_key', $authUser->id) ?? '' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+
+
                                     <div class="row">
                                         <div class="col-md-12 text-left">
                                             <div class="form-group">

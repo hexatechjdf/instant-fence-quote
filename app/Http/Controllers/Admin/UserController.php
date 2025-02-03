@@ -293,12 +293,12 @@ class UserController extends Controller
         $data = $request->all();
         foreach ($data as $key => $d) {
             if ($d['is_manual'] == false) {
-                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_QUEUE_TYPE'));
+                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'));
             }
         }
         return response()->json(['status' => 'success',  'message' => 'Your agancy locations are connecting in the background']);
     }
-    
+
     public function saveUserDetail(Request $request)
     {
         $data = $request->all();

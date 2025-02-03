@@ -139,7 +139,7 @@ class SettingController extends Controller
     {
         // dd($request->all());
         $location = find_location($request->location_id);
-        SendSurvey::dispatch($request->all())->onQueue(env('JOB_QUEUE_TYPE'));
+        SendSurvey::dispatch($request->all())->onQueue(env('JOB_DASHBOARD_TYPE'));
         // $send =  sendSurvey($request);
         $res = [
             'status' => 'error',
@@ -159,7 +159,7 @@ class SettingController extends Controller
                 $contactId = $chk->contact_id;
 
                 if($contactId){
-                    AddTagJob::dispatch($contactId, ['Instant Fence Quote', 'Complete'],  $userID, $locationId)->onQueue(env('JOB_QUEUE_TYPE'));
+                    AddTagJob::dispatch($contactId, ['Instant Fence Quote', 'Complete'],  $userID, $locationId)->onQueue(env('JOB_DASHBOARD_TYPE'));
                     $res = [
                         'status' => 'success',
                         'message' => 'Your Fence Estimate has been Received. We will contact you soon.',
