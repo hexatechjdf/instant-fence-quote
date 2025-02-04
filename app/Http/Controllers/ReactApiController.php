@@ -29,16 +29,18 @@ class ReactApiController extends Controller
             if ($decrypted === false) {
                 return response()->json(['status' => false]);
             } else {
-
                 $decrypted_data = json_decode($decrypted, true);
                 $location_id = isset($decrypted_data['activeLocation']) ? $decrypted_data['activeLocation'] : null;
+                if ($location_id == null) {
+                    return response()->json(['status' => false, 'message' => "User location Id not found in the token"]);
+                }
+
                 $user = User::where('location', $location_id)
                     ->first();
 
                 if (!$user) {
                     return response()->json(['status' => false, 'message' => "User location not found"]);
                 }
-
                 if ($user) {
                     $userId = $user->id;
                     $token = CrmToken::where(['location_id' => $location_id])->first();
@@ -167,7 +169,7 @@ class ReactApiController extends Controller
     public function uploadContactImage(Request $request)
     {
         try {
-            \Log::info($request->all());
+            // \Log::info($request->all());
             $ssoKey = setting('sso_key');
             if (!$ssoKey) {
                 return response()->json(['status' => false, 'message' => 'SSO key is not configured.']);
@@ -210,7 +212,7 @@ class ReactApiController extends Controller
                         file_put_contents($tmpFilePath, $decodedImage);
 
                         // Prepare payload for further processing
-                        $imgNameUnique = 'caseybyzahid' . $location_id . $request->contactId . str_replace(' ', '', now());
+                        $imgNameUnique = 'fencedraw' . $location_id . $request->contactId . str_replace(' ', '', now());
                         $imgNameCustom1 = $imgNameUnique . '.' . $imageType;
                         $payload['file'] = new \CURLFile($tmpFilePath, mime_content_type($tmpFilePath), $imgNameCustom1);
                         $payload['name'] = $imgNameUnique;
@@ -218,7 +220,6 @@ class ReactApiController extends Controller
                         $responseUploadFile = CRM::crmV2Loc($user->id, $location_id, 'medias/upload-file', 'POST', $payload);
 
                         fclose($tmpFile); // Close and delete the temporary file
-
                         // sleep(5);
                         if ($responseUploadFile && property_exists($responseUploadFile, 'fileId')) {
                             $contactId = $request->contactId;

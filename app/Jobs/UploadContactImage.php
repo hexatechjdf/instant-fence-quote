@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use stdClass;
+use Str;
 
 class UploadContactImage implements ShouldQueue
 {
@@ -52,7 +53,7 @@ class UploadContactImage implements ShouldQueue
         $getFileUrl = 'medias/files?sortBy=createdAt&sortOrder=asc&query=' . $imgNameCustom . '&altType=location&altId=' . $location_id;
         //Call for the getting image url
         $responseGetFileUrl = CRM::crmV2Loc($userId, $location_id, $getFileUrl, 'GET');
-
+        \Log::info(json_encode($responseGetFileUrl));
         if ($responseGetFileUrl && property_exists($responseGetFileUrl, 'files')) {
             // $responseGetFileUrl = json_decode($responseGetFileUrl);
             $file = $responseGetFileUrl->files[0] ?? null;
@@ -62,12 +63,17 @@ class UploadContactImage implements ShouldQueue
                 $urlContactUpdate = 'contacts/' . $contactID;
                 $det = new stdClass();
                 $customFieldDet = new stdClass();
-                $customFieldDet->value = $fileUrl;
+
+                $uuid = (string) Str::uuid();
+                $imagedata = \customFieldFile($uuid, $fileUrl , "fencedraw.png");
+
+                $customFieldDet->value = $imagedata;
                 $customFieldDet->key = 'drawcanvas';
                 $customField[] = $customFieldDet;
                 $det->customFields = $customField;
                 $data = json_encode($det);
-                sleep(10);
+                \Log::info($data);
+                // sleep(10);
 
                 GHLApiCallJob::dispatch($userId, $location_id, $urlContactUpdate, 'PUT', $data)->onQueue(env('JOB_QUEUE_TYPE'));
                 // CRM::crmV2Loc($userId, $location_id, $urlContactUpdate, 'PUT', $data);

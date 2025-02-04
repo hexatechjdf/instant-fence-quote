@@ -204,14 +204,13 @@ function saveContactToGhl($request)
 
         AddContactAndTagJob::dispatch($userId, $locationId, $data, $requestAll,$estimatorId,['Instant Fence Quote', 'Incomplete'] )->onQueue(env('JOB_QUEUE_TYPE'));
 
-        $resp = new stdClass;
-        $resp->estimate_id = $estimatorId;
-        return $resp;
-
         // $res = CRM::crmV2Loc(1, $token->location_id, 'contacts', 'post', $sab, $token);
         // $res = ghl_api_call('contacts', ['method' => 'POST', 'body' => json_encode($sab), 'json' => true, 'token' => $location->ghl_api_key]);
     }
 
+    $resp = new stdClass;
+    $resp->estimate_id = $estimatorId;
+    return $resp;
 
 
     // $resp->contact_id = $res->contact->id ?? null;
@@ -349,7 +348,7 @@ function setCustomFields($request, $loc)
             }
         }
     } catch (\Exception $e) {
-        dd($e->getMessage());
+        // dd($e->getMessage());
     }
     return $user_custom_fields;
 }
@@ -725,20 +724,7 @@ function sendSurvey($request, $type = "send")
 
         $file_path = 'images/estimates/' . $uuid . '.png';
         if (file_exists(public_path($file_path))) {
-            $imagedata = [
-                $uuid => [
-                    "meta" => [
-                        "fieldname" => $uuid,
-                        "size" => filesize(public_path($file_path)),
-                        "originalname" => "fence_map_data.png",
-                        "mimetype" => "image/png",
-                        "encoding" => "7bit",
-                        "uuid" => $uuid
-                    ],
-                    "documentId" => $uuid,
-                    "url" => asset($file_path)
-                ]
-            ];
+            $imagedata = customFieldFile($uuid,asset($file_path), "fence_map_data.png", filesize(public_path($file_path)));
         }
 
 
@@ -811,6 +797,25 @@ function sendSurvey($request, $type = "send")
         }
         // return true;
     }
+}
+
+function customFieldFile($uuid, $file_path, $name, $size = 0){
+
+    $imagedata = [
+        $uuid => [
+            "meta" => [
+                "fieldname" => $uuid,
+                "size" => $size,
+                "originalname" =>  $name,
+                "mimetype" => "image/png",
+                "encoding" => "7bit",
+                "uuid" => $uuid
+            ],
+            "documentId" => $uuid,
+            "url" => $file_path
+        ]
+    ];
+    return $imagedata;
 }
 
 function add_tags($contact_id, $tag,$token, $customFields = null)
