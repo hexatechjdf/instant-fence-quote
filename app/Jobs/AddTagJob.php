@@ -47,7 +47,7 @@ class AddTagJob implements ShouldQueue
         $companyId = $this->companyId; // USer ID
         $location = $this->location; // Location ID
 
-        \Log::info('Step 10');
+        // \Log::info('Step 10');
         if (!is_object($contact_id)) {
             $contact_id = str_replace(' ', '', $contact_id);
             $response = CRM::crmV2Loc($companyId, $location, 'contacts/' . $contact_id, 'get');

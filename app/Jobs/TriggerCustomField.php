@@ -33,7 +33,6 @@ class TriggerCustomField implements ShouldQueue
 
         if ($companies->isNotEmpty()) {
             foreach ($companies as $company) {
-                \Log::info($company);
                 SetCustomField::dispatch($company)->onQueue(env('JOB_QUEUE_TYPE'))->delay(3);
                 // $callFn = newSetCustomField($CustomFields, $company);
             }

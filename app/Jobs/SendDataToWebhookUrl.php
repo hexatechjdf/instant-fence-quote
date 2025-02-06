@@ -53,7 +53,6 @@ class SendDataToWebhookUrl implements ShouldQueue
         foreach ($remove as $key) {
             unset($data[$key]);
         }
-        \Log::info('Step 8');
         $webhook_url = \setting('webhook_url', $id);
 
         if ($webhook_url) {

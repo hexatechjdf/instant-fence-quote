@@ -50,7 +50,8 @@ class SetCustomField implements ShouldQueue
             'installation_address',
             'estimator_link',
             'is_estimate_completed',
-            'estimated_deleted'
+            'estimated_deleted',
+            'drawcanvas'
         ];
 
         try {

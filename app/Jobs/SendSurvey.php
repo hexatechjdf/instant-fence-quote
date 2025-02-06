@@ -51,7 +51,6 @@ class SendSurvey implements ShouldQueue
             $chk->save();
         }
 
-        \Log::info('Step 5');
         if ($type == 'delete') {
             $send_fields = [
                 'estimated_deleted' => date('Y-m-d H:i:s'),
@@ -111,7 +110,6 @@ class SendSurvey implements ShouldQueue
                     'field_value' => $v
                 ];
             }
-            \Log::info('Step 6');
             $u_obj = new stdClass;
             $u_obj->customField = $cfs;
             $ContData = json_encode($u_obj);

@@ -53,7 +53,6 @@ class UserEstimates implements ShouldQueue
                 if($estimates->isNotEmpty()){
                     foreach ($estimates as $estimate) {
                         if($estimate->contact_id !== null && $estimate->contact_id !== '' && !empty($estimate->contact_id)){
-                            \Log::info('Step 3');
                             // Current Estimate, userLocation, UserId
                             SendOneEstimate::dispatch($estimate, $location, $companyId)->onQueue(env('JOB_QUEUE_TYPE'))->delay(3);
                         }

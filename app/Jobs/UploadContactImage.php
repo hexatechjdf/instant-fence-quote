@@ -53,7 +53,6 @@ class UploadContactImage implements ShouldQueue
         $getFileUrl = 'medias/files?sortBy=createdAt&sortOrder=asc&query=' . $imgNameCustom . '&altType=location&altId=' . $location_id;
         //Call for the getting image url
         $responseGetFileUrl = CRM::crmV2Loc($userId, $location_id, $getFileUrl, 'GET');
-        \Log::info(json_encode($responseGetFileUrl));
         if ($responseGetFileUrl && property_exists($responseGetFileUrl, 'files')) {
             // $responseGetFileUrl = json_decode($responseGetFileUrl);
             $file = $responseGetFileUrl->files[0] ?? null;
@@ -72,7 +71,6 @@ class UploadContactImage implements ShouldQueue
                 $customField[] = $customFieldDet;
                 $det->customFields = $customField;
                 $data = json_encode($det);
-                \Log::info($data);
                 // sleep(10);
 
                 GHLApiCallJob::dispatch($userId, $location_id, $urlContactUpdate, 'PUT', $data)->onQueue(env('JOB_QUEUE_TYPE'));

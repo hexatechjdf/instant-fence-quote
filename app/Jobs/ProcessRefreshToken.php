@@ -37,9 +37,7 @@ class ProcessRefreshToken implements ShouldQueue
             $limit = 40;
             $currentPage = $this->page - 1;
             $skip = $currentPage * $limit;
-            \Log::info('Skip =' . $skip);
             $rl = CrmToken::where('user_type' , 'Company')->skip($skip)->take($limit)->get();
-            \Log::info($rl);
             if ($rl->isNotEmpty()) {
                 foreach ($rl as $r) {
                     dispatch((new UpdateRefreshToken($r))->onQueue(env('JOB_QUEUE_TYPE'))->delay(Carbon::now()->addSeconds(2)));

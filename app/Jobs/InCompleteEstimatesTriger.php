@@ -42,7 +42,7 @@ class InCompleteEstimatesTriger implements ShouldQueue
 
         if($companies->isNotEmpty()){
             foreach ($companies as $company) {
-                \Log::info('Step 2');
+                // \Log::info('Step 2');
                 UserEstimates::dispatch($company)->onQueue(env('JOB_QUEUE_TYPE'));
             }
             static::dispatch($this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);

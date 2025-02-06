@@ -93,7 +93,7 @@
                           <li class="nav-item dropdown">
                               <a class="nav-link dropdown-toggle" href="#" id="navbarUI_Kit" data-bs-toggle="dropdown"
                                   aria-haspopup="true" aria-expanded="false">
-                                  <span><i class="ti ti-planet menu-icon"></i>Outer Pages</span>
+                                  <span><i class="ti ti-planet menu-icon"></i>More Menu Items</span>
                               </a>
                               <ul class="dropdown-menu animate slideIn" aria-labelledby="navbarUI_Kit">
                                   @foreach($outpages as $page)
