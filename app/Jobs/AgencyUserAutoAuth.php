@@ -57,7 +57,10 @@ class AgencyUserAutoAuth implements ShouldQueue
                     }
                 }
 
-                static::dispatch($userId, $this->page + 1)->delay(5);
+                if ($users->count() === $limit) {
+                    static::dispatch($userId, $this->page + 1)->delay(5);
+                }
+
             }
         } catch (\Throwable $th) {
             \Log::error($th);

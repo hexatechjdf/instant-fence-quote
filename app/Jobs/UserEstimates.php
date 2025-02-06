@@ -58,7 +58,9 @@ class UserEstimates implements ShouldQueue
                         }
                         //Job To send Data for the each estimate
                     }
-                    static::dispatch($company, $this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);
+                    if ($estimates->count() === $limit) {
+                        static::dispatch($company, $this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);
+                    }
                 }
 
             }

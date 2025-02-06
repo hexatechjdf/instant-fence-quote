@@ -57,7 +57,6 @@ function totalCategory()
 
 function check_ghl($loc)
 {
-    \Log::info($loc->location);
     $token = CrmToken::where('location_id', $loc->location)->first();
     if ($token && $token->access_token) {
         return true;

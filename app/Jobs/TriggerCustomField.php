@@ -36,7 +36,10 @@ class TriggerCustomField implements ShouldQueue
                 SetCustomField::dispatch($company)->onQueue(env('JOB_QUEUE_TYPE'))->delay(3);
                 // $callFn = newSetCustomField($CustomFields, $company);
             }
-            static::dispatch($this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);
+
+            if ($companies->count() === $limit) {
+                static::dispatch($this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);
+            }
         }
     }
 

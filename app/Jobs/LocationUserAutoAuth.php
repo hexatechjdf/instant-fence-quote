@@ -33,7 +33,10 @@ class LocationUserAutoAuth implements ShouldQueue
                     GetLocationAccessToken::dispatch($userId, $locationId, 'Location')->onQueue(env('JOB_QUEUE_TYPE'));
                     // CRM::getLocationAccessToken($userId, $locationId, 'Location');
                 }
-                static::dispatch($this->page + 1)->delay(5);
+                if ($users->count() === $limit) {
+                    static::dispatch($this->page + 1)->onQueue(env('JOB_QUEUE_TYPE'))->delay(5);
+
+                }
             }
         } catch (\Throwable $th) {
             \Log::error($th);

@@ -206,11 +206,11 @@ class EstimateController extends Controller
 
     public function InCompleteEstimates()
     {
-        \Log::info('Step 1');
+        // \Log::info('Step 1');
         InCompleteEstimatesTriger::dispatch()->onQueue(env('JOB_QUEUE_TYPE'));
     }
 
-    //Not USeable now 
+    //Not USeable now
     public function InCompleteEstimates1()
     {
 

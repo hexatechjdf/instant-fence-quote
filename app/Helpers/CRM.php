@@ -258,7 +258,7 @@ class CRM
             if ($resp && property_exists($resp, 'access_token')) {
                 $resp = self::saveCrmToken($resp, $user_id);
             } else if (self::isExpired($resp) && $retries == 0) {
-                \Log::info('Token Expired');
+                // \Log::info('Token Expired');
                 list($is_refresh, $companyToken) = self::getRefreshToken(1, $companyToken, true);
                 if ($is_refresh) {
                     return self::getLocationAccessTokenFirstTimeByCompany($user_id, $location_id, $retries + 1);
@@ -270,7 +270,7 @@ class CRM
 
     public static function getLocationAccessToken($user_id, $location_id, $userType = null, $token = null, $retries = 0)
     {
-        \Log::info('step 23');
+        // \Log::info('step 23');
         if($userType == null){
             $userType = self::$lang_com;
         }else{
@@ -321,7 +321,6 @@ class CRM
             //$type = $oldtype ?? $type;
             $code = json_decode($code);
         }
-        \Log::info(['CCode',$code]);
         if ($code) {
 
             if (!$company_id) {

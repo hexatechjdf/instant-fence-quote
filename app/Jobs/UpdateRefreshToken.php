@@ -33,9 +33,9 @@ class UpdateRefreshToken implements ShouldQueue
         try {
             $rf = $this->user;
             if ($rf) {
-                $status = $rf->urefresh();
-                if ($status == 500) {
-                    dispatch((new UpdateRefreshToken($this->user))->onQueue(env('JOB_QUEUE_TYPE'))->delay(Carbon::now()->addMinutes(5)));
+                $status = (int) $rf->urefresh();
+                if ($status === 500) {
+                    dispatch((new UpdateRefreshToken($this->user))->onQueue(env('JOB_QUEUE_TYPE')));
                 }
             }
         } catch (\Throwable $th) {
