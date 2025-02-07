@@ -43,10 +43,11 @@ Route::get('/migrate', function () {
 
 Route::get('/process-code', function () {
 
+    return 'final';
+    $hashedValue = bcrypt('12345678');
+    // GetLocationAccessToken::dispatch(2, 'JoqQ51Bl3LEmR42l6LrG', 'viaAgency')->onQueue(env('JOB_QUEUE_TYPE'));
 
-    GetLocationAccessToken::dispatch(2, 'JoqQ51Bl3LEmR42l6LrG', 'viaAgency')->onQueue(env('JOB_QUEUE_TYPE'));
-
-    return 'Job Processed';
+    return $hashedValue;
 
 
     // $companies = User::where(['role' => 0, 'is_active' => true])->get();
