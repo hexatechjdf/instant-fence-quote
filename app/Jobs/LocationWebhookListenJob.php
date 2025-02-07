@@ -54,6 +54,8 @@ class LocationWebhookListenJob implements ShouldQueue
                         if (property_exists($loc, 'business')) {
                             $userEmail = $loc->business->email ?? "";
                         }
+                    }else{
+                        return response()->json(['status' => 'failed', 'message' => "No Location Found inagency "]);
                     }
                 }
                 $userDet = User::where(['location' => $request['id'] ])->first();
