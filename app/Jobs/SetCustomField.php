@@ -85,7 +85,9 @@ class SetCustomField implements ShouldQueue
                 // Process each key and create custom fields if needed
                 foreach ($keys_to_create as $key) {
                     $type = strpos($key, 'date') !== false ? 'DATE' : 'TEXT';
-                    $type = $key == 'map_image_url' ? 'FILE_UPLOAD' : $type;
+                    if ($key == 'map_image_url' || $key == 'drawcanvas') {
+                        $type = 'FILE_UPLOAD';
+                    }
                     $send_name = ucwords(str_replace('_', ' ', $key));
 
                     $CustData = json_encode(['name' => $send_name, 'dataType' => $type]);

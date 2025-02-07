@@ -100,6 +100,12 @@
 @section('js')
     <script>
     $(document).ready(function() {
+
+    //     $('.location-select').select2({
+    //     placeholder: "Select Location",
+    //     allowClear: true,
+    // });
+
         // Function to toggle between input and select based on checkbox state
         function toggleLocationInput(checkbox) {
             const userId = $(checkbox).data('user-id');
