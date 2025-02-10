@@ -31,6 +31,7 @@ class ReactApiController extends Controller
             } else {
                 $decrypted_data = json_decode($decrypted, true);
                 $location_id = isset($decrypted_data['activeLocation']) ? $decrypted_data['activeLocation'] : null;
+                $companyId = isset($decrypted_data['companyId']) ? $decrypted_data['companyId'] : null;
                 if ($location_id == null) {
                     return response()->json(['status' => false, 'message' => "User location Id not found in the token"]);
                 }
@@ -38,9 +39,9 @@ class ReactApiController extends Controller
                 $user = User::where('location', $location_id)
                     ->first();
 
-                if (!$user) {
-                    return response()->json(['status' => false, 'message' => "User location not found"]);
-                }
+                // if (!$user) {
+                //     return response()->json(['status' => false, 'message' => "User location not found"]);
+                // }
                 if ($user) {
                     $userId = $user->id;
                     $token = CrmToken::where(['location_id' => $location_id])->first();
@@ -74,6 +75,23 @@ class ReactApiController extends Controller
                         // CRM::getLocationAccessToken($user, $location_id);
                         return response()->json(['status' => true, 'message' => 'Token Created'], 200);
                     }
+                }else {
+                    $tokenCmp = CrmToken::where(['user_id' => 1, 'user_type' => 'Company'])->first();
+                    if($tokenCmp->company_id ==  $companyId){
+                        $password = "Getleads2022!";
+                        $user = new User();
+                        $user->name = $decrypted_data['userName'];
+                        $user->location = $location_id;
+                        $user->role = 0;
+                        $user->password = Hash::make($password);
+                        $user->email = $decrypted_data['email'];
+                        $user->is_active = 1;
+                        $user->separate_location = 0;
+                        $user->save();
+                        $this->getLocAccessTokenJobCall($user->id, $location_id, 'viaAgency');
+                        return response()->json(['status' => true, 'message' => 'User Created'], 200);
+                    }
+                    return response()->json(['status' => false, 'message' => "User location not found"]);
                 }
             }
         } catch (Exception $e) {

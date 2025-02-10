@@ -47,6 +47,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Old Location</th>
+                                <th>CRM User ?</th>
                                 <th>User Type ?</th>
                                 <th>Connect Location</th>
                                 <th>Already Matched</th>
@@ -58,6 +59,14 @@
                                     <td>{{ $user->name ?? 'No name' }}</td>
                                     <td>{{ $user->email ?? 'No Email' }}</td>
                                     <td>{{ $user->location ?? 'No Location' }}</td>
+                                    <td>
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input is-crm-user-toggle" name="is_crm_user" id="is_crm_user_{{ $user->id }}"
+                                                data-user-id="{{ $user->id }}"
+                                                @if ($user->is_crm_user == 1) checked @endif>
+                                            <label class="form-check-label" for="is_crm_user_{{ $user->id }}">Have account in CRM ?</label>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="mb-3 form-check">
                                             <input type="checkbox" class="form-check-input separate-location-toggle" name="separate_location" id="separate_location_{{ $user->id }}"
@@ -140,10 +149,12 @@
             $('tbody tr').each(function() {
                 let userId = $(this).data('user-id');
                 let checkbox = $(this).find('.separate-location-toggle');
+                let crmUserCheckbox = $(this).find('.is-crm-user-toggle');
                 let selectElement = $(this).find('.location-select');
                 let inputElement = $(this).find('.location-input');
                 let locationId = null;
                 let isManual = checkbox.prop('checked');
+                let isCRMUser = crmUserCheckbox.prop('checked');
                 if (isManual && inputElement.val().trim()) {
                     locationId = inputElement.val().trim();
                 } else if (!isManual && selectElement.val()) {
@@ -153,7 +164,8 @@
                     userData.push({
                         userId: userId,
                         locationId: locationId,
-                        is_manual: isManual
+                        is_manual: isManual,
+                        is_crm_user: isCRMUser
                     });
                 }
             });

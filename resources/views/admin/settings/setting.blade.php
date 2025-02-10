@@ -431,7 +431,7 @@
                 </div>
             </div>
         </div>
-        @if ($authUser->separate_location == 1)
+        @if ($authUser->separate_location == 1 && $authUser->is_crm_user == 1)
         <div class="row text-center">
             <div class="col-md-12">
                 <div class="form-group">

@@ -290,9 +290,12 @@ class UserController extends Controller
 
     public function connectLocations(Request $request)
     {
+        \Artisan::call('optimize:clear');
+        \Artisan::call('config:clear');
+        \Artisan::call('cache:clear');
         $data = $request->all();
         foreach ($data as $key => $d) {
-            if ($d['is_manual'] == false) {
+            if ($d['is_manual'] == false && $d['is_crm_user'] == true) {
                 GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'));
             }
         }
@@ -316,6 +319,9 @@ class UserController extends Controller
                 }
                 if($d['is_manual'] == true){
                     $user->separate_location = 1;
+                }
+                if($d['is_crm_user'] == false){
+                    $user->is_crm_user = 0;
                 }
                 // Save location if it's unique for this user
                 $user->location = $d['locationId'];
