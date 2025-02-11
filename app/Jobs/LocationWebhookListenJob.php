@@ -64,6 +64,7 @@ class LocationWebhookListenJob implements ShouldQueue
                     $userDet = new User();
                     $userDet->name = $request['name'] ?? '';
                     $userDet->location = $request['id'];
+                    $userDet->survey_id = $request['id'];
                     $userDet->role = 0;
                     $userDet->password = Hash::make($password);
                     $userDet->email = $userEmail;

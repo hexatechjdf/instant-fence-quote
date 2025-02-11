@@ -62,7 +62,7 @@
                                 <label for="separate_location" class="form-check-label ml-2">Separate location? <strong class="ml-3"> ( Note: </strong><small class="text-danger"> Need to be Toggle ON if the user have a separate location </small>)</label>
                             </div>
                         </div>
-                        <div class="form-group row">
+                        <div class="form-group row" hidden>
                             <div class="col-md-12">
                                 <label for="email"> Rogue CRM API Key    <strong class="ml-3"> ( Note: </strong><small class="text-danger"> Insert only If You want to send the estimate informations to the Rogue CRM  </small>)</label>
                                 <textarea placeholder="Api Key" class="form-control @error('api_key') is-invalid @enderror" name="api_key"></textarea>
@@ -75,10 +75,10 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-md-12">
-                                <label for="location">Unique Estimator Survey Id *  <strong class="ml-3"> ( Note: </strong><small class="text-danger"> It will be the unique identifier for User's estimator survey </small>)</label>
-                                <textarea placeholder="Unique Estimator Survey" class="form-control @error('location') is-invalid @enderror" name="location"
-                                    value="{{ old('location') }}" id="location"></textarea>
-                                @error('location')
+                                <label for="survey_id">Unique Estimator Survey Id *  <strong class="ml-3"> ( Note: </strong><small class="text-danger"> It will be the unique identifier for User's estimator survey </small>)</label>
+                                <textarea placeholder="Unique Estimator Survey" class="form-control @error('survey_id') is-invalid @enderror" name="survey_id"
+                                    value="{{ old('survey_id') }}" id="survey_id"></textarea>
+                                @error('survey_id')
                                     <span class="invalid-feedback">
                                         <strong>{{ $message }}</strong>
                                     </span>

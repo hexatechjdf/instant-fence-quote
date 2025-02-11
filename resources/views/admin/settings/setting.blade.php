@@ -229,7 +229,7 @@
                                                 <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                             </div>
                                             @php
-                                                $location_id = $authUser->location;
+                                                $location_id = $authUser->survey_id;
                                             @endphp
                                             <textarea rows="3" class="form-control text-left" id="estimator_iframe" aria-label="estimator_iframe url"
                                                 aria-describedby="button-addon3"><iframe src="{{ route('estimator.index', $location_id) }}" class="estimator" frameborder="0" style="border:none;width:100%;height: 100vh;"  id="{{ $location_id }}"></iframe><script src="{{ asset('assets/js/iframe-resizer.js') }}"></script></textarea>

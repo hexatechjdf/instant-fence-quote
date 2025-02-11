@@ -109,12 +109,16 @@ class SettingController extends Controller
 
 
         if (auth()->check()) {
-            $location = auth()->user()->location;
+            $location = auth()->user()->survey_id;
         } else {
             $location = $id;
         }
-        $fence = User::with('categories', 'categories.fences', 'categories.fences.ft_available', 'categories.fences.ft_available.ft_available', 'categories.fences.ft_available.prices')->where('is_active', 1)->where('location', $location)->first();
+        $fence = User::with('categories', 'categories.fences', 'categories.fences.ft_available', 'categories.fences.ft_available.ft_available', 'categories.fences.ft_available.prices')->where('is_active', 1)->where('survey_id', $location)->first();
+        // dd($fence);
+        $location_id = $location;
+
         if ($fence) {
+            $location_id = $fence->location;
             unset($fence->user);
             unset($fence->email);
             unset($fence->ghl_api_key);

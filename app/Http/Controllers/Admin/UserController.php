@@ -147,6 +147,7 @@ class UserController extends Controller
 
     public function deleteAll()
     {
+        return 'not allowed';
         $users = User::where('is_active', 0)->get();
         foreach ($users as $user) {
             $user->delete();
@@ -165,17 +166,19 @@ class UserController extends Controller
                 'email'          => 'required|email|unique:users',
                 'password'   => 'required',
                 //    'api_key'      => 'required',
-                'location'      => 'required|unique:users'
+                'survey_id'      => 'required|unique:users'
             ]);
         }
 
         if (is_null($id)) {
+            $locSurId = $req->survey_id ?? rand(11111111111, 99999999999990);
             $user = User::create([
                 'name' => $req->name,
                 'ghl_api_key'  => $req->api_key ?? '',
                 'email' => $req->email,
                 'password' => Hash::make($req->password),
-                'location'  => $req->location ?? rand(11111111111, 99999999999990),
+                'survey_id'  => $locSurId,
+                'location'  => $locSurId,
                 'role'         => 0,
                 'is_active' => 1,
                 'separate_location' => $req->has('separate_location') ? 1 : 0
@@ -192,7 +195,7 @@ class UserController extends Controller
                 'name'          => 'required',
                 'email'          => 'required|email',
                 // 'api_key'      => 'required',
-                'location'      => 'required'
+                'survey_id'      => 'required|unique:users,survey_id,'.$id
             ]);
 
             $user = User::findOrFail($id);
@@ -204,7 +207,7 @@ class UserController extends Controller
             if ($req->password) {
                 $user->password = Hash::make($req->password);
             }
-            $user->location  = $req->location;
+            $user->survey_id  = $req->survey_id;
             $user->save();
 
             $msg = "Record Edited Successfully!";

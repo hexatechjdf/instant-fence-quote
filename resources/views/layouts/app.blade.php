@@ -42,7 +42,7 @@
     <link href="{{ asset('assets/css/jquery-ui.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/metisMenu.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/css/app-top.css') }}" rel="stylesheet" type="text/css" /> 
+    <link href="{{ asset('assets/css/app-top.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css"
         integrity="sha512-gxWow8Mo6q6pLa1XH/CcH8JyiSDEtiwJV78E+D+QP0EVasFs8wKXq16G8CLD4CJ2SnonHr4Lm/yY2fSI2+cbmw=="
@@ -291,11 +291,11 @@
     </div>
 
 
-   
+
     <!-- Left Sidenav -->
     {{-- <div} class="left-sidenav">
         <!-- LOGO -->
-        
+
         <!--end logo-->
         <div>
             @include('admin.components.left-nav-header')
@@ -402,7 +402,7 @@
     @endif
     @if (session('error'))
     <script>
-        toastr.danger("{{ session('error') }}")
+        toastr.error("{{ session('error') }}")
 
     </script>
     @endif

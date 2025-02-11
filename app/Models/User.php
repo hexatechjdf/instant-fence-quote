@@ -23,7 +23,8 @@ class User extends Authenticatable
         'password',
         'ghl_api_key',
         'location',
-        'is_active'
+        'is_active',
+        'survey_id'
     ];
 
     /**
@@ -88,6 +89,11 @@ class User extends Authenticatable
     public function crmtokenagency()
     {
         return $this->hasOne(CrmToken::class, 'user_id')->where('user_type', 'company');
+    }
+
+    public function crmtoken()
+    {
+        return $this->hasOne(CrmToken::class, 'user_id');
     }
 
 }

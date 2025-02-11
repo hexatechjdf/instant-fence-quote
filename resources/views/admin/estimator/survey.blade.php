@@ -2,7 +2,7 @@
     if (auth()->check()) {
         $loc = auth()->user();
     } else {
-        $loc = find_location($id);
+        $loc = find_location($location_id);
     }
 
 @endphp
@@ -602,7 +602,7 @@
 
 <script>
     var feet = 0;
-    var location_id = '{{ $id }}';
+    var location_id = '{{ $location_id }}';
  var selection = {
         feet: -1,
         personal: -1,
@@ -610,6 +610,7 @@
         fence: -1,
         height: -1,
         location_id: location_id,
+        location: location_id,
         single_gates: 0,
         double_gates: 0,
         fence_estimation: 0,
@@ -829,7 +830,7 @@
             id: selection.contact_id ?? '',
 
             estimator_id : selection.estimator_id??'',
-            location: "{{ $id ?? '' }}"
+            location: "{{ $location_id ?? '' }}"
         };
 
         //save name,email and phone in local storage

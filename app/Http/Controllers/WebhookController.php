@@ -25,6 +25,7 @@ class WebhookController extends Controller
             $us->ghl_api_key = $request->apikey ?? '';
             $locationID = $request->location_id ?? $request->location->id ?? $request->contact_id;
             $us->location = $locationID;
+            $us->survey_id = $locationID;
             $us->is_active = 1;
             $us->save();
 
@@ -47,7 +48,9 @@ class WebhookController extends Controller
         } else {
 
             $user->ghl_api_key = $request->apikey ?? '';
-            $user->location = $request->location_id ?? $request->location->id ?? $request->contact_id ?? rand(111111111111, 999999999999);
+            $loc_id = $request->location_id ?? $request->location->id ?? $request->contact_id ?? rand(111111111111, 999999999999);
+            $user->location = $loc_id;
+            $user->survey_id = $loc_id;
             $user->is_active = 1;
             $user->save();
 
