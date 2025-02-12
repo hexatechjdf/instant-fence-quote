@@ -102,6 +102,11 @@ class SettingController extends Controller
     public function estimator(Request $request, $id = '')
     {
         $whereleft =null;
+        if (!$request->query('v')) {
+            $routeParams = $request->route()->parameters();
+            $queryParams = array_merge($request->query(), ['v' => 1]);
+            return redirect()->route($request->route()->getName(), array_merge($routeParams, $queryParams));
+        }
         if ($request->whereleft) {
             $whereleft = $request->whereleft;
             $whereleft = Estimate::where(['uuid' => $whereleft, 'is_completed' => false])->first();
