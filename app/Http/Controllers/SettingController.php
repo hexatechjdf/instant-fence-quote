@@ -113,7 +113,22 @@ class SettingController extends Controller
         } else {
             $location = $id;
         }
-        $fence = User::with('categories', 'categories.fences', 'categories.fences.ft_available', 'categories.fences.ft_available.ft_available', 'categories.fences.ft_available.prices')->where('is_active', 1)->where('survey_id', $location)->first();
+        // $fence = User::with('categories', 'categories.fences', 'categories.fences.ft_available', 'categories.fences.ft_available.ft_available', 'categories.fences.ft_available.prices')->where('is_active', 1)->where('survey_id', $location)->first();
+
+        $fence = User::with([
+            'categories',
+            'categories.fences',
+            'categories.fences.ft_available',
+            'categories.fences.ft_available.ft_available',
+            'categories.fences.ft_available.prices'
+        ])
+        ->where('is_active', 1)
+        ->where(function ($query) use ($location) {
+            $query->where('survey_id', $location)
+                  ->orWhere('location', $location);
+        })
+        ->first();
+
         // dd($fence);
         $location_id = $location;
 
