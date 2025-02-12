@@ -155,6 +155,7 @@
         .for_padd {
             margin-top: 20px;
         }
+
         #personal {
             display: flex;
             flex-direction: column;
@@ -415,22 +416,26 @@
 
                     <div class="row ml-1">
                         <div class="col-12">
-                        <div class="form-group">
-                            <div class="input-group mb-3">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="optin-disclaimer" required>
-                                <label class="form-check-label" for="optin-disclaimer">
-                                    By submitting this form and signing up for texts, you consent to receive marketing text messages (e.g. promos) from an auto dialer.  Consent is not a condition of purchase or doing business with us.  Msg & Data Rates may apply.  Unsubscribe at any time by replying STOP or clicking unsubscribe link (where available)  WE WILL NEVER SELL YOUR INFORMATION.
-                                </label>
+                            <div class="form-group">
+                                <div class="input-group mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="optin-disclaimer" required>
+                                        <label class="form-check-label" for="optin-disclaimer">
+                                            By submitting this form and signing up for texts, you consent to receive
+                                            marketing text messages (e.g. promos) from an auto dialer. Consent is not a
+                                            condition of purchase or doing business with us. Msg & Data Rates may apply.
+                                            Unsubscribe at any time by replying STOP or clicking unsubscribe link (where
+                                            available) WE WILL NEVER SELL YOUR INFORMATION.
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
+
+
+
+
+
                         </div>
-                    </div>
-
-
-
-
-
-                </div>
             </section>
 
             <section class="rotate-vert-right map_slide" id="fence_feet" key="feet" next="fence_type"
@@ -457,7 +462,8 @@
             </section>
 
 
-            <section class="rotate-vert-right flex-column" id="gates" next="fence_estimation" style="display: none">
+            <section class="rotate-vert-right flex-column" id="gates" next="fence_estimation"
+                style="display: none">
                 <div class="row1">
                     <div class="row" id="single_gates" key="single_gates">
                         <h4>Single Gates</h4>
@@ -518,6 +524,7 @@
                                 padding: 5rem 0px !important;
                                 border-radius: 0px !important;
                             }
+
                             .survey_details * {
                                 box-shadow: none !important;
                             }
@@ -603,7 +610,7 @@
 <script>
     var feet = 0;
     var location_id = '{{ $location_id }}';
- var selection = {
+    var selection = {
         feet: -1,
         personal: -1,
         category: -1,
@@ -622,51 +629,50 @@
     var base_color = "rgb(230,230,230)";
     var active_color = "{{ setting('estimator_primary_color', $loc->id) ?? '#ED2846' }}";
     var child = 1;
-    @if($whereleft != null)
+    @if ($whereleft != null)
 
-    $(document).ready(function() {
+        $(document).ready(function() {
 
 
 
-        setTimeout(function() {
-            selection = JSON.parse(whereleft.last_selected);
-            if('feet' in selection){
-                feet = selection.feet;
-            }
-
-            if(whereleft.where_left=='personal'){
-                $('#next').trigger('click');
-                return;
-            }
-            $('.rotate-vert-right').hide();
-            $('.rotate-vert-right').removeClass('active');
-            var nxtchk = $('#' + whereleft.where_left).attr('next');
-            $('#' + nxtchk).show();
-            $('#' + nxtchk).addClass('active');
-
-            let is_found = false;
-            $('.rotate-vert-right').each(function() {
-                if ($(this).hasClass('active')) {
-                    is_found = true;
+            setTimeout(function() {
+                selection = JSON.parse(whereleft.last_selected);
+                if ('feet' in selection) {
+                    feet = selection.feet;
                 }
-                if (!is_found) {
-                    if (child > 1) {
-                        $('#prev').show();
+
+                if (whereleft.where_left == 'personal') {
+                    $('#next').trigger('click');
+                    return;
+                }
+                $('.rotate-vert-right').hide();
+                $('.rotate-vert-right').removeClass('active');
+                var nxtchk = $('#' + whereleft.where_left).attr('next');
+                $('#' + nxtchk).show();
+                $('#' + nxtchk).addClass('active');
+
+                let is_found = false;
+                $('.rotate-vert-right').each(function() {
+                    if ($(this).hasClass('active')) {
+                        is_found = true;
                     }
-                    child++;
-                    fill_active(child);
+                    if (!is_found) {
+                        if (child > 1) {
+                            $('#prev').show();
+                        }
+                        child++;
+                        fill_active(child);
 
-                }
-            });
+                    }
+                });
 
 
 
 
-        }, 500);
+            }, 500);
 
 
-    })
-
+        })
     @endif
 </script>
 <script>
@@ -703,17 +709,17 @@
 
 
     function int_slide(key, slideEvt) {
-       try{
+        try {
             selection[key] = slideEvt;
-        $('.' + key).text(slideEvt);
-        $(`[name=${key}]`).val(slideEvt);
-        calculate_fence_estimate(false, false);
+            $('.' + key).text(slideEvt);
+            $(`[name=${key}]`).val(slideEvt);
+            calculate_fence_estimate(false, false);
 
-       }catch(ee){}
+        } catch (ee) {}
     }
 
-    function checkRadios(section, check=false) {
-        if(check){
+    function checkRadios(section, check = false) {
+        if (check) {
             return true;
         }
 
@@ -728,7 +734,7 @@
         return checked;
     }
 
-    function checkRange(section, check=false) {
+    function checkRange(section, check = false) {
         // if(check){
         //     return true;
         // }
@@ -753,12 +759,12 @@
         return emailReg.test(email);
     }
 
-    function validatePhone(getValue=false) {
+    function validatePhone(getValue = false) {
 
         //intl tel input validat numbr
         var iti = window.intlTelInputGlobals.getInstance(document.querySelector("#phone"));
         var valid = iti.isValidNumber();
-        if(getValue){
+        if (getValue) {
             return iti.getNumber();
         }
         return valid;
@@ -829,7 +835,7 @@
             phone: validatePhone(true),
             id: selection.contact_id ?? '',
 
-            estimator_id : selection.estimator_id??'',
+            estimator_id: selection.estimator_id ?? '',
             location: "{{ $location_id ?? '' }}"
         };
 
@@ -919,12 +925,12 @@
 
     $(document).ready(function() {
         // resizeit();
-        setTimeout(function(){
-            render_slide('fence_type', response_data.all.categories,selection.category);
+        setTimeout(function() {
+            render_slide('fence_type', response_data.all.categories, selection.category);
             updateFields('fence_type');
             updateFields('fence_style');
 
-            if('address' in selection){
+            if ('address' in selection) {
                 $('#search_box').val(selection.address);
 
             }
@@ -933,16 +939,16 @@
             $('#single_gate').val(selection.single_gates).trigger('input');
             $('.double_gates').html(selection.double_gates);
             $('#double_gate').val(selection.double_gates).trigger('input');
-            setTimeout(function(){
-                if(whereleft && whereleft.where_left=='gates'){
+            setTimeout(function() {
+                if (whereleft && whereleft.where_left == 'gates') {
 
                     show_details();
 
-                $("#submit").removeClass("disabled");
-                $('#next').addClass("disabled");
-            }
-            },600);
-        },500);
+                    $("#submit").removeClass("disabled");
+                    $('#next').addClass("disabled");
+                }
+            }, 600);
+        }, 500);
         var length = $("section").length - 1;
         $("#prev").addClass("disabled");
         $("#submit").addClass("disabled");
@@ -1165,10 +1171,12 @@
                         let redirectUrl;
                         if (isInsideIframe) {
                             // If the code is running inside an iframe
-                            redirectUrl = `{{ setting('thank_you_page_url', $loc->id ?? null) ?? route('estimator.thank-you', $loc->id ?? null) }}`;
+                            redirectUrl =
+                                `{{ setting('thank_you_page_url', $loc->id ?? null) ?? route('estimator.thank-you', $loc->id ?? null) }}`;
                         } else {
                             // If the code is NOT running inside an iframe
-                            redirectUrl = `{{ setting('thank_you_page_url') ?? route('estimator.thank-you') }}`;
+                            redirectUrl =
+                                `{{ setting('thank_you_page_url') ?? route('estimator.thank-you') }}`;
                         }
 
                         // Debugging statements
@@ -1178,9 +1186,10 @@
                         if (redirectUrl) {
                             // Perform the redirect
                             if (isInsideIframe) {
-                            window.parent.location.href = redirectUrl;  // Redirect parent window
+                                window.parent.location.href =
+                                redirectUrl; // Redirect parent window
                             } else {
-                            window.location.href = redirectUrl;  // Redirect this window
+                                window.location.href = redirectUrl; // Redirect this window
                             }
                         } else {
                             console.error('Redirect URL is not set.');
@@ -1202,15 +1211,20 @@
 
 
 <script>
+    var messages = {
 
-   var messages = {
-
-        fence_type: "{!! setting('error_message_fencetype', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
-        fence_style: "{!! setting('error_message_fencestyle', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
-        fence_height: "{!! setting('error_message_fenceheight', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
-        _gates: "{!! setting('error_message_fenceftprice', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
-        range_gates: "{!! setting('error_message_pricerange', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
-        price_gates: "{!! setting('error_message_gatetypeprice', $loc->id) ?? 'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} "
+        fence_type: "{!! setting('error_message_fencetype', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
+        fence_style: "{!! setting('error_message_fencestyle', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
+        fence_height: "{!! setting('error_message_fenceheight', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
+        _gates: "{!! setting('error_message_fenceftprice', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
+        range_gates: "{!! setting('error_message_pricerange', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} ",
+        price_gates: "{!! setting('error_message_gatetypeprice', $loc->id) ??
+            'An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.' !!} "
     };
 
     function displaymap() {
@@ -1340,10 +1354,12 @@
         }
         console.log(msg, messages[msg]);
 
-        $('#' + msg1 + ' ' + row).html(`<h3 class="error text-danger text-center">An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.</h3>`)
+        $('#' + msg1 + ' ' + row).html(
+            `<h3 class="error text-danger text-center">An error has occurred while using the fence estimator tool. If this issue persists, please contact your fence company via phone or email to get your estimate. We apologize for the inconvenience.</h3>`
+            )
     }
 
-    function render_slide(newkey, values = [],default_value = -1) {
+    function render_slide(newkey, values = [], default_value = -1) {
         var renderdata = $('#' + newkey + ' .row');
         renderdata.html('');
         if (values.length == 0) {
@@ -1375,7 +1391,7 @@
             }
             if (img !== '') {
                 var imgpath = "{{ asset('') }}/" + img;
-                var img_error = this.src = "{{config('constant.placeholder.url')}}200x200?text=" + name;
+                var img_error = this.src = "{{ config('constant.placeholder.url') }}200x200?text=" + name;
                 //
                 img = '<img src="' + imgpath + '" alt="' + name +
                     '" loading="lazy" class="img-responsive form-control p-0" onerror="this.src=\'' +
@@ -1414,8 +1430,8 @@
 
     function updateFields(field) {
         // console.log(field);
-        let default_value=-1;
-        //  console.log(response_data);
+        let default_value = -1;
+        // console.log(response_data);
         var alldata = response_data.all.categories;
         //var value = this.value;
         var images = [];
@@ -1434,7 +1450,7 @@
                 scrollLock(false);
                 parentWindow.postMessage("remove_map", "*");
                 $('#fence_feet').removeClass('map-contain');
-                selection.address= $('#search_box').val();
+                selection.address = $('#search_box').val();
                 sendSelection();
                 return;
             }
@@ -1443,8 +1459,8 @@
                 //var id = response_data[].id;
                 // selection.category = value;
                 images = alldata[selection.category].fences;
-                if(selection.fence>-1){
-                    default_value=selection.fence;
+                if (selection.fence > -1) {
+                    default_value = selection.fence;
                 }
                 newkey = 'fence_style';
             }
@@ -1455,8 +1471,8 @@
                 // selection.fence = value;
                 // images = alldata[selection.category];//.fences[selection.fence].ft_available;
                 images = alldata[selection.category].fences[selection.fence].ft_available;
-                if(selection.height>-1){
-                    default_value=selection.height;
+                if (selection.height > -1) {
+                    default_value = selection.height;
                 }
                 console.log(images);
                 newkey = "fence_height";
@@ -1478,7 +1494,7 @@
                 //calculate_fence_estimate(false);
                 return;
             }
-            render_slide(newkey, images,default_value);
+            render_slide(newkey, images, default_value);
         } catch (error) {
 
         }
@@ -1487,8 +1503,8 @@
 
 
 
-    function show_details(d='') {
-        if(d!=''){
+    function show_details(d = '') {
+        if (d != '') {
             selection = whereleft.last_selected;
         }
         var my_obj = {
@@ -1591,19 +1607,23 @@
     // zooms out the screen for IOS devices when input is focused, after input is deselected
     document.addEventListener('focus', function(event) {
         if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-            document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+            document.querySelector('meta[name="viewport"]').setAttribute('content',
+                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
         }
     }, true);
 
     document.addEventListener('blur', function(event) {
         if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-            document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=1');
+            document.querySelector('meta[name="viewport"]').setAttribute('content',
+                'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=1');
         }
     }, true);
 </script>
 
 <style>
-    input, select, textarea {
+    input,
+    select,
+    textarea {
         font-size: 16px;
     }
 </style>

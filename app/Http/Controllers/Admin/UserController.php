@@ -147,7 +147,7 @@ class UserController extends Controller
 
     public function deleteAll()
     {
-        return 'not allowed';
+       
         $users = User::where('is_active', 0)->get();
         foreach ($users as $user) {
             $user->delete();
@@ -229,19 +229,15 @@ class UserController extends Controller
 
     public function delete($id = null)
     {
-        User::find($id)->delete();
+        User::where('role', 0)->find($id)->delete();
         return redirect()->back()->with('success', 'Record Delete Successfully!');
     }
 
     public function isActive($id)
     {
-        $category = User::find($id);
-        if ($category->is_active == 1) {
-            $category->is_active = 0;
-        } elseif ($category->is_active == 0) {
-            $category->is_active = 1;
-        }
+        $category = User::where('role', 0)->find($id);
 
+        $category->is_active = $category->is_active==1?0:1;
         $category->save();
         return back()->with('success', 'Status Changed Successfully.');
     }
@@ -299,7 +295,7 @@ class UserController extends Controller
         $data = $request->all();
         foreach ($data as $key => $d) {
             if ($d['is_manual'] == false && $d['is_crm_user'] == true) {
-                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'));
+                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'))->onDelay(2);
             }
         }
         return response()->json(['status' => 'success',  'message' => 'Your agancy locations are connecting in the background']);

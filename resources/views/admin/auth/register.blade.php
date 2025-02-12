@@ -36,14 +36,27 @@
                             <div class="px-3">
                                 <div class="auth-logo-box mt-5">
                                     <a href="{{ route('dashboard') }}" class="logo logo-admin"><img
-                                            src="{{ asset(setting('software_logo', 1)) ?? asset('assets/images/logo-sm.png') }}" height="55" alt="logo"
-                                            class="auth-logo"></a>
+                                            src="{{ asset(setting('software_logo', 1)) ?? asset('assets/images/logo-sm.png') }}"
+                                            height="55" alt="logo" class="auth-logo"></a>
                                 </div>
                                 <!--end auth-logo-box-->
                                 <div class="text-center auth-logo-text pt-4">
                                     <h4 class="mt-0 mb-3 mt-5">Register Account</h4>
-                                    <p class="text-muted">Note: Upon completing your account registration, it will undergo an administrative review and remain pending for approval. You can expect the review process to be completed within the next 24 hours.</p>
+                                    <p class="text-muted">Note: Upon completing your account registration, it will
+                                        undergo an administrative review and remain pending for approval. You can expect
+                                        the review process to be completed within the next 24 hours.</p>
                                 </div>
+
+                                @if ($errors->any())
+                                    <div class="alert alert-danger">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
                                 <!--end auth-logo-text-->
                                 <form class="form-horizontal auth-form my-4" action="{{ route('register') }}"
                                     method="POST">
@@ -55,7 +68,7 @@
                                                 <i class="dripicons-user"></i>
                                             </span>
                                             <input type="text" class="form-control" name="name" id="name"
-                                                placeholder="Enter Name">
+                                                placeholder="Enter Name" required>
                                         </div>
                                     </div>
                                     <!--end form-group-->
@@ -66,7 +79,7 @@
                                                 <i class="dripicons-mail"></i>
                                             </span>
                                             <input type="email" class="form-control" name="email" id="email"
-                                                placeholder="Enter Email">
+                                                placeholder="Enter Email" required>
                                         </div>
                                     </div>
                                     <!--end form-group-->
@@ -77,7 +90,7 @@
                                                 <i class="fa fa-eye text-blue"></i>
                                             </span>
                                             <input type="password" class="form-control" name="password" id="password"
-                                                placeholder="Enter password">
+                                                placeholder="Enter password" required>
                                         </div>
                                     </div>
                                     <!--end form-group-->
@@ -89,7 +102,7 @@
                                                 <i class="fa fa-eye text-blue"></i>
                                             </span>
                                             <input type="password" class="form-control" name="confirm_password"
-                                                id="confirm_password" placeholder="Enter Confirm Password">
+                                                id="confirm_password" placeholder="Enter Confirm Password" required>
                                         </div>
                                     </div>
                                     <!--end form-group-->
