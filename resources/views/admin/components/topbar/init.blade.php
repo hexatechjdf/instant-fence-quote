@@ -142,6 +142,10 @@
                                   <span>Settings</span>
                               </a>
                           </li>
+                          @if (session('super_admin') && !empty(session('super_admin')) && $role == 0)
+                          <a class="btn btn-primary btn-sm " data-title="Back to Super Admin" href="{{ route('backadmin') }}">Back to
+                              Admin</a>
+                      @endif
                       </ul>
                   </div>
               </div>

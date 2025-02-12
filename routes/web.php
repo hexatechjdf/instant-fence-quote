@@ -121,6 +121,30 @@ Route::get('/scripts/{ext}/{file}', function ($ext, $file) {
 require __DIR__ . '/auth.php';
 
 Route::middleware('auth')->group(function () {
+
+    Route::get('/loginwith/{email}', function ($email) {
+        $email = decrypt($email);
+        $user = \Auth::user();
+        if ($user->role == 1) {
+            session()->put('super_admin', $user);
+            $user = \App\Models\User::where(['email' => $email, 'role' => 0])->first();
+            if ($user->role == 0) {
+                // session()->remove('ghlcontacts');
+                \Auth::login($user);
+                return redirect()->route('dashboard');
+            }
+        }
+    })->name('loginwith');
+
+    Route::get('/backtoadmin', function () {
+        if (session('super_admin') && !empty(session('super_admin'))) {
+            Auth::login(session('super_admin'));
+            session()->put('super_admin', '');
+            return redirect()->route('user.list');
+        }
+    })->name('backadmin');
+
+
     Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::post('/profile-save', [DashboardController::class, 'general'])->name('profile.save');

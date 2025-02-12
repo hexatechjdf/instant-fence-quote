@@ -376,7 +376,7 @@ function sendToWebhookUrl($data, $id)
 
 function find_location($location)
 {
-    $user = User::where('location', $location)->first() ?? null;
+    $user = User::where('location', $location)->orWhere('survey_id', $location)->first() ?? null;
     if ($user) {
         session(['location_id' => $user]);
     }

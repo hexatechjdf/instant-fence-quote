@@ -60,6 +60,12 @@ class UserController extends Controller
                                  <a class="dropdown-item" href="' . route('user.edit', $row->id) . '" class="mr-2">Edit</a>
                                 <a class="dropdown-item" href="' . route('user.delete', $row->id) . '" onclick="event.preventDefault(); deleteMsg(\'' . route('user.delete', $row->id) . '\')">Delete</a>
                         ';
+
+
+                        $html .= '
+                         <a class="dropdown-item" href="' . route('loginwith', encrypt($row['email'])) . '" class="mr-2">Login as user</a>
+                        ';
+
                     return $html;
                 })
                 ->rawColumns(['action', 'status', 'separate_location'])
@@ -147,7 +153,7 @@ class UserController extends Controller
 
     public function deleteAll()
     {
-       
+
         $users = User::where('is_active', 0)->get();
         foreach ($users as $user) {
             $user->delete();
