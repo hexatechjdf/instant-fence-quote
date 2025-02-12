@@ -301,7 +301,7 @@ class UserController extends Controller
         $data = $request->all();
         foreach ($data as $key => $d) {
             if ($d['is_manual'] == false && $d['is_crm_user'] == true) {
-                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'))->onDelay(2);
+                GetLocationAccessToken::dispatch($d['userId'], $d['locationId'], 'viaAgency')->onQueue(env('JOB_DASHBOARD_TYPE'))->delay(now()->addSeconds(2));
             }
         }
         return response()->json(['status' => 'success',  'message' => 'Your agancy locations are connecting in the background']);
