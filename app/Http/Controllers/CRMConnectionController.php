@@ -10,6 +10,9 @@ class CRMConnectionController extends Controller
 {
     public function crmCallback(Request $request)
     {
+        \Artisan::call('optimize:clear');
+        \Artisan::call('config:clear');
+        \Artisan::call('cache:clear');
         $code = $request->code ?? null;
         if ($code) {
             $user = loginUser();
